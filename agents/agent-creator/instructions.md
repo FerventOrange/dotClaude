@@ -77,7 +77,7 @@ Would you like me to create a new agent? (y/n)
 ## Required Context
 
 ### Minimum Required from User:
-- **Agent Name**: What to call the agent (e.g., "git-commit-helper")
+- **Agent Name**: What to call the agent (e.g., "git-commit-agent")
 - **Purpose**: One-sentence description of what it does
 - **Scope**: What the agent DOES and DOES NOT do
 
@@ -106,7 +106,7 @@ Ask user for agent details:
 ```
 Let's create your agent! I need some information:
 
-1. Agent Name: (e.g., "git-commit-helper")
+1. Agent Name: (e.g., "git-commit-agent")
    - Use lowercase with hyphens
    - Should reflect narrow scope
 
@@ -487,7 +487,7 @@ Please provide this information and I'll continue.
 Problem: [Specific issue]
 - Names should be lowercase with hyphens
 - Should reflect narrow scope
-- Examples: git-commit-helper, readme-agent, test-writer
+- Examples: git-commit-agent, readme-agent, test-writer
 
 Suggested names:
 - [suggestion-1]
@@ -509,7 +509,7 @@ Great! Let's create a git commit message helper agent.
 Based on your request, here's what I'm thinking:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Name: git-commit-helper
+Name: git-commit-agent
 Purpose: Assists in writing conventional commit messages
 Category: Git Workflows
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

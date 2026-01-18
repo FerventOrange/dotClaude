@@ -66,7 +66,7 @@ agents/
 
 ```json
 {
-  "name": "git-commit-helper",
+  "name": "git-commit-agent",
   "version": "1.0.0",
   "description": "Assists in writing conventional commit messages",
   "scope": "git workflows",
@@ -228,7 +228,7 @@ Before adding an agent to the repository, verify:
 
 ### ❌ The "Feature Creep" Agent
 ```
-# Started as: git-commit-helper
+# Started as: git-commit-agent
 # Now also: formats code, runs tests, pushes to remote, creates PRs
 ```
 **Problem:** Scope expanded beyond original purpose
@@ -263,7 +263,7 @@ claude-code --agent code-reviewer
 Agents should recommend other agents when a request is out of scope:
 
 ```
-I'm the git-commit-helper agent, focused solely on crafting commit messages.
+I'm the git-commit-agent agent, focused solely on crafting commit messages.
 
 Your request to refactor this code is outside my scope. 
 I recommend using the 'code-refactorer' agent for this task:

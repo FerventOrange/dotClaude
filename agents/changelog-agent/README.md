@@ -58,7 +58,7 @@ claude-code --agent changelog-agent --since v1.0.0
 
 ❌ Create or modify source code  
 ❌ Create git tags or releases  
-❌ Write commit messages (use `git-commit-helper`)  
+❌ Write commit messages (use `git-commit-agent`)  
 ❌ Modify git history  
 ❌ Publish releases to GitHub  
 ❌ Update version numbers in code  
@@ -285,7 +285,7 @@ claude-code --agent changelog-agent --style detailed
 
 ## Related Agents
 
-- **git-commit-helper**: Write better commit messages
+- **git-commit-agent**: Write better commit messages
 - **readme-agent**: Generate README.md files
 - **doc-review-agent**: Review documentation quality
 

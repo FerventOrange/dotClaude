@@ -120,7 +120,7 @@ Agent Creator:
 Let's create your agent!
 
 Proposed Design:
-Name: git-commit-helper
+Name: git-commit-agent
 Purpose: Assists in writing conventional commit messages
 Category: Git Workflows
 
@@ -149,7 +149,7 @@ User: y
 Proceed with creation? (y/n): y
 
 ✅ Agent created successfully!
-Files created in agents/git-commit-helper/
+Files created in agents/git-commit-agent/
 ```
 
 ### Example 2: Scope Too Broad

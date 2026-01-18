@@ -15,7 +15,7 @@ Before responding to tasks, check if a specialized agent exists that matches the
 - `git-commit-agent` - Suggest conventional commit messages
 
 **Code Quality:**
-- `codecleanup-agent` - Find redundant/duplicate code for deletion
+- `code-cleanup-agent` - Find redundant/duplicate code for deletion
 
 **Infrastructure:**
 - `agent-creator` - Create new agents (ONLY when user explicitly requests)
@@ -57,7 +57,7 @@ Would you like to use the [agent-name] agent? (y/n)
 | "review docs", "check README" | doc-review-agent | `claude --agent doc-review-agent [file]` |
 | "create agent for..." | agent-creator | `claude --agent agent-creator` |
 | "commit message help" | git-commit-agent | `claude --agent git-commit-agent` |
-| "find duplicate code" | codecleanup-agent | `claude --agent codecleanup-agent` |
+| "find duplicate code" | code-cleanup-agent | `claude --agent code-cleanup-agent` |
 | "update dotClaude" | dotclaude-updater | `claude --agent dotclaude-updater` |
 
 ### Special Rules

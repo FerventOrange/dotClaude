@@ -42,7 +42,7 @@ Perfect! Here's the design:
  AGENT DESIGN
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Name: git-commit-helper
+Name: git-commit-agent
 Purpose: Assists in writing conventional commit messages based on staged changes
 Category: Git Workflows
 Version: 1.0.0
@@ -91,17 +91,17 @@ User: "Yes, perfect!"
  CREATING AGENT FILES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Creating: agents/git-commit-helper/agent.json ✓
-Creating: agents/git-commit-helper/README.md ✓
-Creating: agents/git-commit-helper/instructions.md ✓
-Creating: agents/git-commit-helper/mcp-requirements.txt ✓
-Creating: agents/git-commit-helper/examples/ ✓
+Creating: agents/git-commit-agent/agent.json ✓
+Creating: agents/git-commit-agent/README.md ✓
+Creating: agents/git-commit-agent/instructions.md ✓
+Creating: agents/git-commit-agent/mcp-requirements.txt ✓
+Creating: agents/git-commit-agent/examples/ ✓
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ Agent Created Successfully!
 
-Location: agents/git-commit-helper/
+Location: agents/git-commit-agent/
 
 Files created:
   📄 agent.json (metadata)
@@ -117,10 +117,10 @@ Next Steps:
    - git: npm install -g @modelcontextprotocol/server-git
    - filesystem: (usually pre-installed)
 4. Test the agent:
-   claude-code --agent git-commit-helper
+   claude-code --agent git-commit-agent
 5. Add to version control:
-   git add agents/git-commit-helper
-   git commit -m "feat(agents): add git-commit-helper agent"
+   git add agents/git-commit-agent
+   git commit -m "feat(agents): add git-commit-agent agent"
 
 Related Agents:
   - changelog-agent: Generate CHANGELOG.md from commits

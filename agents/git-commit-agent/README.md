@@ -1,4 +1,4 @@
-# git-commit-helper
+# git-commit-agent
 
 Analyzes your staged git changes and suggests well-crafted conventional commit messages.
 
@@ -17,7 +17,7 @@ git clone git@github.com:FerventOrange/dotClaude.git ~/dotClaude
 git add .
 
 # Get commit message suggestions
-claude-code --agent git-commit-helper
+claude-code --agent git-commit-agent
 ```
 
 ## Features

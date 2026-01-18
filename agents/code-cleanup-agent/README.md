@@ -9,7 +9,7 @@ Scans codebases to find code that can be safely removed or consolidated, generat
 ## Usage
 
 ```bash
-claude --agent codecleanup-agent
+claude --agent code-cleanup-agent
 ```
 
 ## Features

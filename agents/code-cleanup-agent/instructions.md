@@ -157,7 +157,7 @@ Skipping and continuing scan...
 If user requests something outside this agent's scope:
 
 ```
-I'm the codecleanup-agent, focused on finding redundant and duplicate code.
+I'm the code-cleanup-agent, focused on finding redundant and duplicate code.
 
 For [requested task], consider using:
 - doc-review-agent: For documentation quality review

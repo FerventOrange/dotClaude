@@ -1,5 +1,5 @@
 {
-  "name": "git-commit-helper",
+  "name": "git-commit-agent",
   "version": "1.0.0",
   "description": "Assists in writing conventional commit messages based on staged changes",
   "scope": "git commit message generation",

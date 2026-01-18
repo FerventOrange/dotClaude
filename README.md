@@ -60,7 +60,7 @@ See [agentGuidelines.md](agentGuidelines.md) for detailed agent design principle
 | `changelog-agent` | Generate CHANGELOG.md from git history | `claude --agent changelog-agent` |
 | `doc-review-agent` | Review documentation quality | `claude --agent doc-review-agent` |
 | `git-commit-agent` | Suggest conventional commit messages | `claude --agent git-commit-agent` |
-| `codecleanup-agent` | Find redundant/duplicate code | `claude --agent codecleanup-agent` |
+| `code-cleanup-agent` | Find redundant/duplicate code | `claude --agent code-cleanup-agent` |
 | `agent-creator` | Create new scoped agents | `claude --agent agent-creator` |
 | `dotclaude-updater` | Update dotClaude from GitHub | `claude --agent dotclaude-updater` |
 

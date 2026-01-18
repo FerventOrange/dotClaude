@@ -419,7 +419,7 @@ Last Updated: [Date]
 - git-commit-agent (v1.0.0)
 
 ## Code Quality
-- codecleanup-agent (v1.0.0)
+- code-cleanup-agent (v1.0.0)
 
 ## [Other Categories]
 ...

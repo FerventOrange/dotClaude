@@ -20,7 +20,7 @@ Generate and maintain CHANGELOG.md files by analyzing git commit history and org
 ### This agent DOES NOT:
 - Create or modify source code
 - Create git tags or releases
-- Write commit messages (use `git-commit-helper` agent)
+- Write commit messages (use `git-commit-agent` agent)
 - Modify git history or commits
 - Generate README files (use `readme-agent` agent)
 - Review changelog quality (use `doc-review-agent` agent)
@@ -391,8 +391,8 @@ Consider adding:
 
 **Git Commit Messages:**
 ```
-For help writing better commit messages, use the 'git-commit-helper' agent:
-  claude-code --agent git-commit-helper
+For help writing better commit messages, use the 'git-commit-agent' agent:
+  claude-code --agent git-commit-agent
 ```
 
 **Changelog Review:**

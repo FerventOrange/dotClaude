@@ -1,4 +1,4 @@
-# Agent: git-commit-helper
+# Agent: git-commit-agent
 
 ## Primary Objective
 Analyze staged git changes and generate clear, conventional commit messages.
