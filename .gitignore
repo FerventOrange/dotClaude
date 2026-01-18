@@ -1,0 +1,50 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+
+# Node modules (if any scripts use Node)
+node_modules/
+
+# Python (if any scripts use Python)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Logs
+*.log
+logs/
+
+# Test output
+coverage/
+.nyc_output/
+
+# Local configuration overrides
+config/local/
+*.local.json
+*.local.yaml
+
+# Temporary files
+tmp/
+temp/
+*.tmp
