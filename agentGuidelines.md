@@ -144,23 +144,10 @@ git>=1.0.0
 github>=2.0.0  # optional, for advanced features
 ```
 
-### MCP Configuration Helper
-We provide a dedicated agent for MCP setup:
-
-**Agent: `mcp-configurator`**
-- Scans agent requirements
-- Checks installed MCP servers
-- Guides installation of missing servers
-- Validates MCP connectivity
-- Updates Claude Code configuration
-
 ### MCP Server Discovery
 ```bash
 # Check what MCP servers an agent needs
-./scripts/check-mcp-requirements.sh agents/git-commit-helper
-
-# Configure all required MCP servers for an agent
-./scripts/setup-mcp.sh agents/git-commit-helper
+cat agents/[agent-name]/mcp-requirements.txt
 ```
 
 ---
@@ -199,7 +186,7 @@ To maintain organization, agents should fall into one of these categories:
 
 ### 8. Infrastructure
 - Narrow focus: Internal tooling and setup
-- Examples: `mcp-configurator`, `agent-updater`, `workspace-initializer`
+- Examples: `agent-creator`, `dotclaude-updater`
 
 ---
 
@@ -307,9 +294,6 @@ git log HEAD..origin/main --oneline
 
 # Pull latest agents
 git pull origin main
-
-# Verify MCP requirements haven't changed
-./scripts/check-mcp-requirements.sh --all
 ```
 
 ### Version Management
@@ -408,10 +392,10 @@ vim instructions.md agent.json
 ### Testing an Agent
 ```bash
 # Test locally
-claude-code --agent my-new-agent --test
+claude --agent my-new-agent
 
-# Verify MCP requirements
-./scripts/check-mcp-requirements.sh agents/my-new-agent
+# Check MCP requirements
+cat agents/my-new-agent/mcp-requirements.txt
 ```
 
 ### Adding to Repository

@@ -1,0 +1,3 @@
+# MCP servers required for changelog-agent
+git>=1.0.0
+filesystem>=1.0.0

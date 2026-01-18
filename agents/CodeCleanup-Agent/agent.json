@@ -1,0 +1,10 @@
+{
+  "name": "codecleanup-agent",
+  "version": "1.0.0",
+  "description": "Identifies redundant, duplicate, and dead code for cleanup",
+  "author": "dotClaude",
+  "instructions": "instructions.md",
+  "mcpServers": ["filesystem", "git"],
+  "allowedTools": ["Read", "Bash", "Glob", "Grep"],
+  "tags": ["code-quality", "cleanup", "analysis"]
+}

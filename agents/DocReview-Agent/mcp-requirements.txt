@@ -1,0 +1,2 @@
+# MCP servers required for doc-review-agent
+filesystem>=1.0.0

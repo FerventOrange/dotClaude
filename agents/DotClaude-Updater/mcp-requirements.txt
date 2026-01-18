@@ -1,0 +1,3 @@
+# MCP servers required for DotClaude-Updater
+git>=1.0.0
+filesystem>=1.0.0

@@ -14,13 +14,11 @@ dotClaude provides:
 
 ```
 dotClaude/
-├── install/        # OS-specific installation scripts
-├── config/         # Configuration templates and helpers
-├── agents/         # Agent library and registry
-├── scripts/        # Utility scripts for management
-├── docs/           # Documentation and guides
-├── tests/          # Testing and validation
-└── examples/       # Example configurations and workflows
+├── install/        # Installation scripts and custom instructions
+├── agents/         # Agent library (flattened structure)
+├── scripts/        # Utility scripts for agent creation
+├── agentGuidelines.md  # Agent design principles
+└── goals.md        # Project goals and roadmap
 ```
 
 ## Quick Start
@@ -42,7 +40,6 @@ cd ~/dotClaude
 
 ```bash
 git pull origin main
-./scripts/check-mcp-requirements.sh --all
 ```
 
 ## Agent Philosophy
@@ -55,18 +52,17 @@ Each agent in this repository follows the **Single Responsibility Principle**:
 
 See [agentGuidelines.md](agentGuidelines.md) for detailed agent design principles.
 
-## Agent Categories
+## Available Agents
 
-| Category | Purpose | Examples |
-|----------|---------|----------|
-| Code Generation | Generate specific code types | `react-component-generator`, `dockerfile-creator` |
-| Code Analysis | Analyze code for issues | `security-scanner`, `performance-profiler` |
-| Documentation | Create documentation | `readme-generator`, `api-doc-writer` |
-| Testing | Handle testing tasks | `unit-test-writer`, `test-data-creator` |
-| Git Workflows | Git operations | `commit-message-helper`, `pr-description-writer` |
-| Refactoring | Code refactoring | `extract-function`, `rename-variables` |
-| Configuration | Manage config files | `eslint-configurator`, `env-file-manager` |
-| Infrastructure | Internal tooling | `mcp-configurator`, `agent-updater` |
+| Agent | Purpose | Usage |
+|-------|---------|-------|
+| `readme-agent` | Generate README.md files | `claude --agent readme-agent` |
+| `changelog-agent` | Generate CHANGELOG.md from git history | `claude --agent changelog-agent` |
+| `doc-review-agent` | Review documentation quality | `claude --agent doc-review-agent` |
+| `git-commit-agent` | Suggest conventional commit messages | `claude --agent git-commit-agent` |
+| `codecleanup-agent` | Find redundant/duplicate code | `claude --agent codecleanup-agent` |
+| `agent-creator` | Create new scoped agents | `claude --agent agent-creator` |
+| `dotclaude-updater` | Update dotClaude from GitHub | `claude --agent dotclaude-updater` |
 
 ## Contributing
 

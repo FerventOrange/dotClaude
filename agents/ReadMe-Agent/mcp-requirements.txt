@@ -1,0 +1,2 @@
+# MCP servers required for readme-agent
+filesystem>=1.0.0

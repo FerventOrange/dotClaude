@@ -1,0 +1,131 @@
+# Claude Code Custom Instructions - Agent Integration
+
+## Agent Awareness Protocol
+
+Before responding to tasks, check if a specialized agent exists that matches the request.
+
+### Available Agents
+
+**Documentation:**
+- `readme-agent` - Generate/update README.md files
+- `changelog-agent` - Generate/update CHANGELOG.md from git history
+- `doc-review-agent` - Review documentation quality
+
+**Git Workflows:**
+- `git-commit-agent` - Suggest conventional commit messages
+
+**Code Quality:**
+- `codecleanup-agent` - Find redundant/duplicate code for deletion
+
+**Infrastructure:**
+- `agent-creator` - Create new agents (ONLY when user explicitly requests)
+- `dotclaude-updater` - Update and verify dotClaude from GitHub
+
+### Agent Recommendation Rules
+
+**WHEN to recommend an agent:**
+1. User request matches agent scope exactly
+2. Agent optimized for the specific task
+3. Task is within agent's documented capabilities
+
+**HOW to recommend:**
+```
+I can help with [task]! We have a specialized agent for this:
+
+**Agent:** [agent-name]
+**Purpose:** [what it does]
+**Usage:** `claude --agent [agent-name]`
+
+**Benefits:**
+- [Specific advantage 1]
+- [Specific advantage 2]
+
+Would you like to use the [agent-name] agent? (y/n)
+```
+
+**WHEN NOT to recommend:**
+- Task outside agent scope
+- User asks not to use agents
+- General help is more appropriate
+
+### Quick Reference
+
+| User Request | Recommend Agent | Command |
+|-------------|-----------------|---------|
+| "create README", "project docs" | readme-agent | `claude --agent readme-agent` |
+| "changelog", "release notes" | changelog-agent | `claude --agent changelog-agent` |
+| "review docs", "check README" | doc-review-agent | `claude --agent doc-review-agent [file]` |
+| "create agent for..." | agent-creator | `claude --agent agent-creator` |
+| "commit message help" | git-commit-agent | `claude --agent git-commit-agent` |
+| "find duplicate code" | codecleanup-agent | `claude --agent codecleanup-agent` |
+| "update dotClaude" | dotclaude-updater | `claude --agent dotclaude-updater` |
+
+### Special Rules
+
+**agent-creator** - Requires explicit user request:
+- ✅ "Create an agent that..." 
+- ❌ "I need help with X" (offer existing agents instead, don't create new one)
+
+### Always:
+- ✅ Ask before using an agent
+- ✅ Explain why agent is recommended
+- ✅ Give user choice between agent and direct help
+- ✅ List available agents when relevant
+
+### Never:
+- ❌ Switch to agent without asking
+- ❌ Recommend agents for out-of-scope tasks
+- ❌ Create agents autonomously
+- ❌ Force agent usage
+
+### Agent Cycling (Multi-Agent Workflows)
+
+When a task could benefit from multiple agents, offer to cycle through them:
+
+**WHEN to cycle agents:**
+- Task spans multiple agent scopes (e.g., "document my project" = readme + changelog)
+- Sequential workflow improves output quality
+- User requests comprehensive handling
+
+**HOW to offer cycling:**
+```
+This task could benefit from multiple agents:
+
+1. [agent-1] - [what it handles]
+2. [agent-2] - [what it handles]
+3. [agent-3] - [what it handles]
+
+Options:
+a) Run all agents in sequence (recommended)
+b) Run specific agent: [1/2/3]
+c) Help directly without agents
+
+Which would you prefer?
+```
+
+**Agent Workflow Chains:**
+
+| Task | Agent Sequence |
+|------|----------------|
+| "Document my project" | readme-agent → changelog-agent → doc-review-agent |
+| "Create and review README" | readme-agent → doc-review-agent |
+| "Full release prep" | changelog-agent → doc-review-agent |
+
+**Cycling Rules:**
+- Complete each agent's task before moving to next
+- Show output/results between agents
+- Allow user to stop or skip at any point
+- Summarize what each agent accomplished
+
+**Transition Format:**
+```
+[agent-1] complete. Results: [summary]
+
+Moving to [agent-2] for [next task]...
+Continue? (y/n/skip)
+```
+
+### Discovery
+Check available agents: `ls agents/`
+Read agent details: `cat agents/[name]/README.md`
+Check requirements: `cat agents/[name]/mcp-requirements.txt`
