@@ -17,8 +17,7 @@ dotClaude/
 ├── install/        # Installation scripts and custom instructions
 ├── agents/         # Agent library (flattened structure)
 ├── scripts/        # Utility scripts for agent creation
-├── agentGuidelines.md  # Agent design principles
-└── goals.md        # Project goals and roadmap
+└── docs/           # Project goals and guidelines for agent creation
 ```
 
 ## Quick Start
@@ -28,12 +27,6 @@ dotClaude/
 ```bash
 git clone git@github.com:FerventOrange/dotClaude.git ~/dotClaude
 cd ~/dotClaude
-```
-
-### Create a New Agent
-
-```bash
-./scripts/create-agent.sh my-agent-name
 ```
 
 ### Update Agents
@@ -67,7 +60,7 @@ See [agentGuidelines.md](agentGuidelines.md) for detailed agent design principle
 ## Contributing
 
 1. Fork the repository
-2. Create a focused agent following the [guidelines](agentGuidelines.md)
+2. Create a focused agent following the [guidelines](docs/agentGuidelines.md)
 3. Test your agent locally
 4. Submit a pull request
 
@@ -77,4 +70,4 @@ MIT
 
 ---
 
-*For project goals and roadmap, see [goals.md](goals.md)*
+*For project goals and roadmap, see [goals.md](docs/goals.md)*

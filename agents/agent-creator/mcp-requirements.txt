@@ -1,2 +1,0 @@
-# MCP servers required for agent-creator
-filesystem>=1.0.0

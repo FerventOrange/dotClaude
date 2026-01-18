@@ -1,2 +1,0 @@
-# MCP servers required for git-commit-helper
-git>=1.0.0

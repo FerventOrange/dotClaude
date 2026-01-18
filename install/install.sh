@@ -145,48 +145,21 @@ install_agents() {
     fi
 
     installed_count=0
-    updated_count=0
 
     for agent_dir in "$SOURCE_AGENTS_DIR"/*/; do
         if [ -d "$agent_dir" ]; then
             agent_name=$(basename "$agent_dir")
             dest_agent_dir="$AGENTS_INSTALL_DIR/$agent_name"
 
-            if [ -d "$dest_agent_dir" ]; then
-                # Agent exists - check if update needed
-                source_json="$agent_dir/agent.json"
-                dest_json="$dest_agent_dir/agent.json"
-
-                if [ -f "$source_json" ] && [ -f "$dest_json" ]; then
-                    source_version=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$source_json" | sed 's/.*"\([^"]*\)"$/\1/')
-                    dest_version=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$dest_json" | sed 's/.*"\([^"]*\)"$/\1/')
-
-                    if [ "$source_version" != "$dest_version" ]; then
-                        # Update agent
-                        rm -rf "$dest_agent_dir"
-                        cp -r "$agent_dir" "$dest_agent_dir"
-                        echo "  Updated: $agent_name (v$dest_version -> v$source_version)"
-                        ((updated_count++))
-                    fi
-                fi
-            else
-                # New agent - install
-                cp -r "$agent_dir" "$dest_agent_dir"
-                echo "  Installed: $agent_name"
-                ((installed_count++))
-            fi
+            # Copy/update agent (each agent is just instructions.md)
+            rm -rf "$dest_agent_dir"
+            cp -r "$agent_dir" "$dest_agent_dir"
+            echo "  Installed: $agent_name"
+            ((installed_count++))
         fi
     done
 
-    if [ $installed_count -gt 0 ]; then
-        echo -e "${GREEN}[OK] $installed_count new agent(s) installed${NC}"
-    fi
-    if [ $updated_count -gt 0 ]; then
-        echo -e "${GREEN}[OK] $updated_count agent(s) updated${NC}"
-    fi
-    if [ $installed_count -eq 0 ] && [ $updated_count -eq 0 ]; then
-        echo -e "${GREEN}[OK] All agents up to date${NC}"
-    fi
+    echo -e "${GREEN}[OK] $installed_count agent(s) installed${NC}"
 }
 
 # Verify installation
@@ -227,13 +200,7 @@ verify_installation() {
     for agent_dir in "$AGENTS_INSTALL_DIR"/*/; do
         if [ -d "$agent_dir" ]; then
             agent_name=$(basename "$agent_dir")
-            agent_json="$agent_dir/agent.json"
-            if [ -f "$agent_json" ]; then
-                version=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$agent_json" | sed 's/.*"\([^"]*\)"$/\1/')
-                echo "  - $agent_name (v$version)"
-            else
-                echo "  - $agent_name"
-            fi
+            echo "  - $agent_name"
         fi
     done
 }

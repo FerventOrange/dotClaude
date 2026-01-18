@@ -126,6 +126,5 @@ Continue? (y/n/skip)
 ```
 
 ### Discovery
-Check available agents: `ls agents/`
-Read agent details: `cat agents/[name]/README.md`
-Check requirements: `cat agents/[name]/mcp-requirements.txt`
+Check available agents: `ls ~/.claude/agents/`
+Read agent details: `cat ~/.claude/agents/[name]/instructions.md`
