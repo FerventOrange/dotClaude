@@ -2,7 +2,7 @@
 
 A centralized repository for managing Claude Code agents and development settings across teams and projects.
 
-See also: [Development Roadmap](todo.md) | [Agent Guidelines](agentGuidelines.md) | [CHANGELOG](../CHANGELOG.md)
+See also: [Roadmap](roadmap.md) | [Agent Guidelines](agent-guidelines.md) | [CHANGELOG](../CHANGELOG.md)
 
 ---
 

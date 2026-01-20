@@ -2,7 +2,7 @@
 
 Guidelines for creating well-scoped, maintainable Claude Code agents.
 
-See also: [Development Roadmap](todo.md) | [Project Goals](goals.md) | [CHANGELOG](../CHANGELOG.md)
+See also: [Roadmap](roadmap.md) | [Project Goals](project-goals.md) | [CHANGELOG](../CHANGELOG.md)
 
 ---
 

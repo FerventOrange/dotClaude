@@ -140,7 +140,7 @@ function Set-AgentAwareness {
     }
 }
 
-# Install agents to ~/.claude/agents (copy agent directories)
+# Install agents to ~/.claude/agents (copy agent directories from category folders)
 function Install-Agents {
     Write-Host "Installing agents..." -ForegroundColor Yellow
 
@@ -158,32 +158,36 @@ function Install-Agents {
         return
     }
 
-    # Get list of agents
-    $agents = Get-ChildItem -Directory $sourceAgentsDir -ErrorAction SilentlyContinue
+    # Get category directories (github, documentation, code, testing, infrastructure)
+    $categories = Get-ChildItem -Directory $sourceAgentsDir -ErrorAction SilentlyContinue
 
-    if ($agents.Count -eq 0) {
-        Write-Warn "No agents found in source directory"
+    if ($categories.Count -eq 0) {
+        Write-Warn "No agent categories found"
         return
     }
 
     $installedCount = 0
 
-    foreach ($agent in $agents) {
-        $instructionsPath = Join-Path $agent.FullName "instructions.md"
-        $destAgentDir = Join-Path $AgentsInstallDir $agent.Name
+    foreach ($category in $categories) {
+        # Get agents within each category
+        $agents = Get-ChildItem -Directory $category.FullName -ErrorAction SilentlyContinue
 
-        if (-not (Test-Path $instructionsPath)) {
-            Write-Warn "Skipping $($agent.Name) - missing instructions.md"
-            continue
-        }
+        foreach ($agent in $agents) {
+            $instructionsPath = Join-Path $agent.FullName "instructions.md"
+            $destAgentDir = Join-Path $AgentsInstallDir $agent.Name
 
-        # Remove existing and copy fresh
-        if (Test-Path $destAgentDir) {
-            Remove-Item -Recurse -Force $destAgentDir
+            if (-not (Test-Path $instructionsPath)) {
+                continue
+            }
+
+            # Remove existing and copy fresh
+            if (Test-Path $destAgentDir) {
+                Remove-Item -Recurse -Force $destAgentDir
+            }
+            Copy-Item -Recurse $agent.FullName $destAgentDir
+            Write-Host "  Installed: $($agent.Name) ($($category.Name))"
+            $installedCount++
         }
-        Copy-Item -Recurse $agent.FullName $destAgentDir
-        Write-Host "  Installed: $($agent.Name)"
-        $installedCount++
     }
 
     if ($installedCount -gt 0) {
