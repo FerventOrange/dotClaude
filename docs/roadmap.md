@@ -2,7 +2,7 @@
 
 This document tracks the development status of dotClaude agents.
 
-See also: [CHANGELOG.md](../CHANGELOG.md) | [Agent Guidelines](agentGuidelines.md) | [Goals](goals.md)
+See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md) | [Project Goals](project-goals.md)
 
 ---
 

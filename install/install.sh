@@ -129,7 +129,7 @@ configure_agent_awareness() {
     fi
 }
 
-# Install agents to ~/.claude/agents
+# Install agents to ~/.claude/agents (from category folders)
 install_agents() {
     echo -e "${YELLOW}Installing agents...${NC}"
 
@@ -146,16 +146,24 @@ install_agents() {
 
     installed_count=0
 
-    for agent_dir in "$SOURCE_AGENTS_DIR"/*/; do
-        if [ -d "$agent_dir" ]; then
-            agent_name=$(basename "$agent_dir")
-            dest_agent_dir="$AGENTS_INSTALL_DIR/$agent_name"
+    # Iterate through category directories (github, documentation, code, etc.)
+    for category_dir in "$SOURCE_AGENTS_DIR"/*/; do
+        if [ -d "$category_dir" ]; then
+            category_name=$(basename "$category_dir")
 
-            # Copy/update agent (each agent is just instructions.md)
-            rm -rf "$dest_agent_dir"
-            cp -r "$agent_dir" "$dest_agent_dir"
-            echo "  Installed: $agent_name"
-            ((installed_count++))
+            # Iterate through agents within each category
+            for agent_dir in "$category_dir"/*/; do
+                if [ -d "$agent_dir" ] && [ -f "$agent_dir/instructions.md" ]; then
+                    agent_name=$(basename "$agent_dir")
+                    dest_agent_dir="$AGENTS_INSTALL_DIR/$agent_name"
+
+                    # Copy/update agent
+                    rm -rf "$dest_agent_dir"
+                    cp -r "$agent_dir" "$dest_agent_dir"
+                    echo "  Installed: $agent_name ($category_name)"
+                    ((installed_count++))
+                fi
+            done
         fi
     done
 

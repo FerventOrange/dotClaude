@@ -118,9 +118,14 @@ Claude: I can help with that! We have a specialized agent:
 
 ```
 dotClaude/
-├── agents/           # Agent definitions (instructions.md files)
-├── docs/             # Guidelines and project goals
-└── install/          # Installation scripts
+├── agents/
+│   ├── github/          # Git workflow agents (Blue)
+│   ├── documentation/   # Doc generation agents (Yellow)
+│   ├── code/            # Code analysis agents (Red)
+│   ├── testing/         # Testing agents (Green)
+│   └── infrastructure/  # dotClaude management (Pink)
+├── docs/                # Guidelines and roadmap
+└── install/             # Installation scripts
 ```
 
 ## Creating Custom Agents
@@ -131,7 +136,7 @@ claude --agent agent-creator
 
 Or manually create `~/.claude/agents/your-agent/instructions.md` with YAML frontmatter.
 
-See [docs/agentGuidelines.md](docs/agentGuidelines.md) for detailed guidelines.
+See [docs/agent-guidelines.md](docs/agent-guidelines.md) for detailed guidelines.
 
 ## Updating
 
@@ -147,7 +152,7 @@ cd ~/dotClaude && git pull
 ## Contributing
 
 1. Fork the repository
-2. Create a focused agent following the [guidelines](docs/agentGuidelines.md)
+2. Create a focused agent following the [guidelines](docs/agent-guidelines.md)
 3. Test locally with `claude --agent your-agent`
 4. Submit a pull request
 
@@ -157,4 +162,4 @@ MIT
 
 ---
 
-*See [docs/goals.md](docs/goals.md) for project roadmap*
+*See [docs/roadmap.md](docs/roadmap.md) for development roadmap*
