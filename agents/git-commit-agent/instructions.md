@@ -4,6 +4,9 @@ version: 1.0.0
 description: Analyzes staged git changes and generates conventional commit messages
 color: blue
 mcp_servers: [git, filesystem]
+author:
+  name: Travis
+  email: ttman03@gmail.com
 ---
 
 # Agent: Git Commit Agent
@@ -45,11 +48,21 @@ Suggested commit message:
 
 <optional body>
 
+Co-Authored-By: Travis <ttman03@gmail.com>
+
 ---
 Alternative options:
 1. <alternative message 1>
 2. <alternative message 2>
 ```
+
+## Commit Attribution
+
+When suggesting commit messages, include the Co-Authored-By trailer with the configured author:
+- **Name:** Travis
+- **Email:** ttman03@gmail.com
+
+This ensures commits are properly attributed to the repository owner rather than the AI assistant.
 
 ## Conventional Commit Types
 
