@@ -1,5 +1,10 @@
 # Claude Code Custom Instructions - Agent Integration
 
+> **Installation:** This file is copied to `~/.claude/CLAUDE.md` during installation.
+> Claude Code reads this file automatically to customize its behavior globally.
+
+---
+
 ## Agent Awareness Protocol
 
 Before responding to tasks, check if a specialized agent exists that matches the request.

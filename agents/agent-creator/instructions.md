@@ -2,6 +2,7 @@
 name: agent-creator
 version: 1.0.0
 description: Creates new scoped agents with all required files (USER-TRIGGERED ONLY)
+color: pink
 mcp_servers: [filesystem]
 ---
 

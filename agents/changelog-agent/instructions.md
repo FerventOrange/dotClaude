@@ -2,6 +2,7 @@
 name: changelog-agent
 version: 1.0.0
 description: Generates and maintains CHANGELOG.md files from git history
+color: yellow
 mcp_servers: [filesystem, git]
 ---
 

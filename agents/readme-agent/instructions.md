@@ -2,6 +2,7 @@
 name: readme-agent
 version: 1.0.0
 description: Generates comprehensive README.md files for projects
+color: yellow
 mcp_servers: [filesystem]
 ---
 
@@ -14,7 +15,7 @@ Generate comprehensive, well-structured README.md files for software projects by
 
 ### This agent DOES:
 - Create new README.md files from scratch
-- Update existing README.md files with missing sections
+- Update existing README.md files
 - Analyze project structure to identify key components
 - Extract information from package managers (package.json, requirements.txt, go.mod, Cargo.toml, etc.)
 - Identify project type and suggest appropriate README sections

@@ -1,5 +1,11 @@
 # Agent Design Guidelines
 
+Guidelines for creating well-scoped, maintainable Claude Code agents.
+
+See also: [Development Roadmap](todo.md) | [Project Goals](goals.md) | [CHANGELOG](../CHANGELOG.md)
+
+---
+
 ## Core Philosophy: Limited Scope, Maximum Effectiveness
 
 Each agent in this repository must be **narrowly focused** on a specific task, domain, or workflow. Scoped agents are easier to maintain, test, understand, and compose together for complex workflows.

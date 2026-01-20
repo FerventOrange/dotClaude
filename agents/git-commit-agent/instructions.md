@@ -2,6 +2,7 @@
 name: git-commit-agent
 version: 1.0.0
 description: Analyzes staged git changes and generates conventional commit messages
+color: blue
 mcp_servers: [git, filesystem]
 ---
 

@@ -2,6 +2,7 @@
 name: dotclaude-updater
 version: 1.0.0
 description: Updates local dotClaude installation from GitHub
+color: pink
 mcp_servers: [filesystem, git]
 ---
 

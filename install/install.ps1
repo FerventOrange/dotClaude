@@ -140,7 +140,7 @@ function Set-AgentAwareness {
     }
 }
 
-# Install agents to ~/.claude/agents as .md files with YAML frontmatter
+# Install agents to ~/.claude/agents (copy agent directories)
 function Install-Agents {
     Write-Host "Installing agents..." -ForegroundColor Yellow
 
@@ -167,60 +167,28 @@ function Install-Agents {
     }
 
     $installedCount = 0
-    $updatedCount = 0
 
     foreach ($agent in $agents) {
-        $agentJsonPath = Join-Path $agent.FullName "agent.json"
         $instructionsPath = Join-Path $agent.FullName "instructions.md"
-        $destAgentFile = Join-Path $AgentsInstallDir "$($agent.Name).md"
+        $destAgentDir = Join-Path $AgentsInstallDir $agent.Name
 
-        if (-not (Test-Path $agentJsonPath) -or -not (Test-Path $instructionsPath)) {
-            Write-Warn "Skipping $($agent.Name) - missing agent.json or instructions.md"
+        if (-not (Test-Path $instructionsPath)) {
+            Write-Warn "Skipping $($agent.Name) - missing instructions.md"
             continue
         }
 
-        # Read agent metadata and instructions
-        $agentMeta = Get-Content $agentJsonPath -Raw | ConvertFrom-Json
-        $instructions = Get-Content $instructionsPath -Raw
-
-        # Build YAML frontmatter (per Claude Code docs)
-        $frontmatter = "---`n"
-        $frontmatter += "name: $($agentMeta.name)`n"
-        $frontmatter += "description: $($agentMeta.description)`n"
-
-        # Add tools as comma-separated list
-        if ($agentMeta.mcp_servers -and $agentMeta.mcp_servers.Count -gt 0) {
-            $toolsList = $agentMeta.mcp_servers -join ", "
-            $frontmatter += "tools: $toolsList`n"
+        # Remove existing and copy fresh
+        if (Test-Path $destAgentDir) {
+            Remove-Item -Recurse -Force $destAgentDir
         }
-
-        $frontmatter += "---`n`n"
-
-        # Combine frontmatter and instructions
-        $agentContent = $frontmatter + $instructions
-
-        # Check if update needed
-        if (Test-Path $destAgentFile) {
-            $existingContent = Get-Content $destAgentFile -Raw -ErrorAction SilentlyContinue
-            if ($existingContent -ne $agentContent) {
-                Set-Content -Path $destAgentFile -Value $agentContent -NoNewline
-                Write-Host "  Updated: $($agent.Name).md"
-                $updatedCount++
-            }
-        } else {
-            Set-Content -Path $destAgentFile -Value $agentContent -NoNewline
-            Write-Host "  Installed: $($agent.Name).md"
-            $installedCount++
-        }
+        Copy-Item -Recurse $agent.FullName $destAgentDir
+        Write-Host "  Installed: $($agent.Name)"
+        $installedCount++
     }
 
     if ($installedCount -gt 0) {
-        Write-Success "$installedCount new agent(s) installed"
-    }
-    if ($updatedCount -gt 0) {
-        Write-Success "$updatedCount agent(s) updated"
-    }
-    if ($installedCount -eq 0 -and $updatedCount -eq 0) {
+        Write-Success "$installedCount agent(s) installed"
+    } else {
         Write-Success "All agents up to date"
     }
 }
@@ -250,8 +218,8 @@ function Test-Installation {
 
     # Check installed agents directory
     if (Test-Path $AgentsInstallDir) {
-        $agentFiles = Get-ChildItem -Path $AgentsInstallDir -Filter "*.md" -ErrorAction SilentlyContinue
-        $agentCount = ($agentFiles | Measure-Object).Count
+        $agentDirs = Get-ChildItem -Path $AgentsInstallDir -Directory -ErrorAction SilentlyContinue
+        $agentCount = ($agentDirs | Measure-Object).Count
         Write-Success "Agents directory: $AgentsInstallDir"
         Write-Success "Agents installed: $agentCount"
     } else {
@@ -262,9 +230,8 @@ function Test-Installation {
     Write-Host ""
     Write-Host "Installed agents:" -ForegroundColor Cyan
 
-    Get-ChildItem -Path $AgentsInstallDir -Filter "*.md" -ErrorAction SilentlyContinue | ForEach-Object {
-        $agentName = $_.BaseName
-        Write-Host "  - $agentName" -ForegroundColor White
+    Get-ChildItem -Path $AgentsInstallDir -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        Write-Host "  - $($_.Name)" -ForegroundColor White
     }
 }
 

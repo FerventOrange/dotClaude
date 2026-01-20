@@ -2,6 +2,7 @@
 name: code-cleanup-agent
 version: 1.0.0
 description: Identifies redundant, duplicate, and dead code for cleanup
+color: red
 mcp_servers: [filesystem, git]
 ---
 

@@ -2,6 +2,7 @@
 name: doc-review-agent
 version: 1.0.0
 description: Reviews documentation for quality, accuracy, and completeness
+color: yellow
 mcp_servers: [filesystem]
 ---
 
