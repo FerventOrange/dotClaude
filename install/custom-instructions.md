@@ -18,6 +18,9 @@ Before responding to tasks, check if a specialized agent exists that matches the
 
 **Git Workflows:**
 - `git-commit-agent` - Suggest conventional commit messages
+- `git-pr-agent` - Manage branches for PR workflows
+- `git-tags-agent` - Manage git tags and version releases
+- `git-issues-agent` - Create well-formatted GitHub issues
 
 **Code Quality:**
 - `code-cleanup-agent` - Find redundant/duplicate code for deletion
@@ -62,6 +65,9 @@ Would you like to use the [agent-name] agent? (y/n)
 | "review docs", "check README" | doc-review-agent | `claude --agent doc-review-agent [file]` |
 | "create agent for..." | agent-creator | `claude --agent agent-creator` |
 | "commit message help" | git-commit-agent | `claude --agent git-commit-agent` |
+| "create branch", "push branch" | git-pr-agent | `claude --agent git-pr-agent` |
+| "create tag", "version release" | git-tags-agent | `claude --agent git-tags-agent` |
+| "create issue", "bug report" | git-issues-agent | `claude --agent git-issues-agent` |
 | "find duplicate code" | code-cleanup-agent | `claude --agent code-cleanup-agent` |
 | "update dotClaude" | dotclaude-updater | `claude --agent dotclaude-updater` |
 

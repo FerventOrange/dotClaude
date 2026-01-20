@@ -44,7 +44,7 @@ Analyze staged git changes and generate clear, conventional commit messages.
 ```
 Suggested commit message:
 
-<type>(<scope>): <subject>
+<type prefix>/<subject>
 
 <optional body>
 

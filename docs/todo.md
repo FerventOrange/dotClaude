@@ -10,11 +10,12 @@ See also: [CHANGELOG.md](../CHANGELOG.md) | [Agent Guidelines](agentGuidelines.m
 
 ### Completed
 - [x] **git-commit-agent** - Creates conventional commit messages
+- [x] **git-pr-agent** - Handle branch switching, creation, and push/pull operations
+- [x] **git-tags-agent** - Manage repository topics and version tags
+- [x] **git-issues-agent** - Create and manage GitHub issues
 
 ### Planned
-- [ ] **git-pr-agent** - Handle branch switching, creation, and push/pull operations
-- [ ] **git-tags-agent** - Manage repository topics and version tags
-- [ ] **git-issues-agent** - Create and manage GitHub issues
+- [ ] **git-sync-agent** - Sync forks with upstream repositories
 
 ---
 
@@ -68,12 +69,12 @@ See also: [CHANGELOG.md](../CHANGELOG.md) | [Agent Guidelines](agentGuidelines.m
 
 | Category | Completed | Planned | Total |
 |----------|-----------|---------|-------|
-| GitHub (Blue) | 1 | 3 | 4 |
+| GitHub (Blue) | 4 | 1 | 5 |
 | Documentation (Yellow) | 3 | 1 | 4 |
 | Code (Red) | 1 | 5 | 6 |
 | Testing (Green) | 0 | 3 | 3 |
 | dotClaude (Pink) | 2 | 1 | 3 |
-| **Total** | **7** | **13** | **20** |
+| **Total** | **10** | **11** | **21** |
 
 ---
 
