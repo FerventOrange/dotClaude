@@ -32,7 +32,7 @@ Before installing dotClaude, ensure you have:
 ### Linux/macOS
 
 ```bash
-git clone https://github.com/travhall/dotClaude.git
+git clone https://github.com/FerventOrange/dotClaude.git
 cd dotClaude
 chmod +x install/install.sh
 ./install/install.sh
@@ -41,7 +41,7 @@ chmod +x install/install.sh
 ### Windows (PowerShell)
 
 ```powershell
-git clone https://github.com/travhall/dotClaude.git
+git clone https://github.com/FerventOrange/dotClaude.git
 cd dotClaude
 .\install\install.ps1
 ```
