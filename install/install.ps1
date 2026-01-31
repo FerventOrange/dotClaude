@@ -14,6 +14,8 @@ $DotClaudeDir = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.P
 $ClaudeConfigDir = Join-Path $env:USERPROFILE ".claude"
 $CustomInstructionsFile = Join-Path $ClaudeConfigDir "CLAUDE.md"
 $AgentsInstallDir = Join-Path $ClaudeConfigDir "agents"
+$HooksInstallDir = Join-Path $ClaudeConfigDir "hooks"
+$SettingsFile = Join-Path $ClaudeConfigDir "settings.json"
 
 function Write-Header {
     param([string]$Text)
@@ -230,6 +232,76 @@ function Install-Agents {
     }
 }
 
+# Install hooks
+function Install-Hooks {
+    Write-Host "Installing hooks..." -ForegroundColor Yellow
+
+    # Create hooks directory
+    if (-not (Test-Path $HooksInstallDir)) {
+        New-Item -ItemType Directory -Path $HooksInstallDir -Force | Out-Null
+    }
+
+    # Copy hook script
+    $sourceHook = Join-Path $DotClaudeDir "install\hooks\block-git-commands.js"
+    if (Test-Path $sourceHook) {
+        Copy-Item $sourceHook (Join-Path $HooksInstallDir "block-git-commands.js") -Force
+        Write-Success "Hook script installed"
+    } else {
+        Write-Warn "block-git-commands.js not found in install/hooks directory"
+        return
+    }
+
+    # Merge hooks into settings.json
+    $hooksTemplate = Join-Path $DotClaudeDir "install\hooks\settings-hooks.json"
+    if (-not (Test-Path $hooksTemplate)) {
+        Write-Warn "settings-hooks.json not found in install/hooks directory"
+        return
+    }
+
+    $template = Get-Content $hooksTemplate -Raw | ConvertFrom-Json
+    $newEntry = $template.hooks.PreToolUse[0]
+
+    if (Test-Path $SettingsFile) {
+        try {
+            $settings = Get-Content $SettingsFile -Raw | ConvertFrom-Json
+        } catch {
+            $settings = [PSCustomObject]@{}
+        }
+    } else {
+        $settings = [PSCustomObject]@{}
+    }
+
+    # Ensure hooks.PreToolUse exists
+    if (-not (Get-Member -InputObject $settings -Name "hooks" -MemberType NoteProperty)) {
+        $settings | Add-Member -NotePropertyName "hooks" -NotePropertyValue ([PSCustomObject]@{})
+    }
+    if (-not (Get-Member -InputObject $settings.hooks -Name "PreToolUse" -MemberType NoteProperty)) {
+        $settings.hooks | Add-Member -NotePropertyName "PreToolUse" -NotePropertyValue @()
+    }
+
+    # Check if hook already exists
+    $hookCmd = $newEntry.hooks[0].command
+    $exists = $false
+    foreach ($entry in $settings.hooks.PreToolUse) {
+        if ($entry.matcher -eq $newEntry.matcher) {
+            foreach ($h in $entry.hooks) {
+                if ($h.command -eq $hookCmd) {
+                    $exists = $true
+                    break
+                }
+            }
+        }
+        if ($exists) { break }
+    }
+
+    if (-not $exists) {
+        $settings.hooks.PreToolUse = @($settings.hooks.PreToolUse) + @($newEntry)
+    }
+
+    $settings | ConvertTo-Json -Depth 10 | Set-Content $SettingsFile -Encoding UTF8
+    Write-Success "Hooks configuration merged into settings.json"
+}
+
 # Verify installation
 function Test-Installation {
     Write-Header "Verification"
@@ -273,6 +345,41 @@ function Test-Installation {
         Write-Success "Agents installed: $agentCount"
     } else {
         Write-Err "Agents directory not found"
+    }
+
+    # Check hooks
+    $hookScript = Join-Path $HooksInstallDir "block-git-commands.js"
+    if (Test-Path $hookScript) {
+        Write-Success "Hook script: $hookScript"
+    } else {
+        Write-Err "Hook script not found"
+    }
+
+    if (Test-Path $SettingsFile) {
+        try {
+            $s = Get-Content $SettingsFile -Raw | ConvertFrom-Json
+            $hookConfigured = $false
+            if ($s.hooks -and $s.hooks.PreToolUse) {
+                foreach ($entry in $s.hooks.PreToolUse) {
+                    if ($entry.matcher -eq "Bash" -and $entry.hooks) {
+                        foreach ($h in $entry.hooks) {
+                            if ($h.command -like "*block-git-commands*") {
+                                $hookConfigured = $true
+                            }
+                        }
+                    }
+                }
+            }
+            if ($hookConfigured) {
+                Write-Success "Hooks configured in settings.json"
+            } else {
+                Write-Err "Hooks not configured in settings.json"
+            }
+        } catch {
+            Write-Err "Could not parse settings.json"
+        }
+    } else {
+        Write-Err "settings.json not found"
     }
 
     # List agents
@@ -328,7 +435,12 @@ function Main {
     Install-Agents
     Write-Host ""
 
-    # Step 5: Verify
+    # Step 5: Install hooks
+    Write-Step "Step 5" "Install Hooks"
+    Install-Hooks
+    Write-Host ""
+
+    # Step 6: Verify
     Test-Installation
 
     Write-Header "Installation Complete!"
@@ -336,6 +448,7 @@ function Main {
     Write-Host "Installed to:"
     Write-Host "  - Custom instructions: $CustomInstructionsFile"
     Write-Host "  - Agents directory: $AgentsInstallDir"
+    Write-Host "  - Hooks directory: $HooksInstallDir"
     Write-Host ""
     Write-Host "Next steps:"
     Write-Host "  1. Start Claude Code: claude"

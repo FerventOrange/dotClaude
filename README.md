@@ -65,6 +65,7 @@ cd dotClaude
 | **git-tags-agent** | GitHub | Manage git tags and version releases |
 | **git-issues-agent** | GitHub | Create well-formatted GitHub issues |
 | **git-sync-agent** | GitHub | Sync forks with upstream repositories |
+| **pr-review-agent** | GitHub | Review pull requests with structured comments |
 | **readme-agent** | Documentation | Generate/update README.md files |
 | **changelog-agent** | Documentation | Generate CHANGELOG.md from git history |
 | **doc-review-agent** | Documentation | Review documentation quality |
@@ -74,10 +75,12 @@ cd dotClaude
 | **code-linting-agent** | Code | Set up and configure linting tools |
 | **dependency-agent** | Code | Validate dependencies across files |
 | **python-agent** | Code | Python-specific code generation |
+| **security-review-agent** | Code | Review code for security vulnerabilities |
 | **terraform-agent** | Code | Terraform infrastructure code generation |
 | **debug-agent** | Testing | Parse errors and identify root causes |
 | **unit-test-agent** | Testing | Generate unit tests for functions/classes |
 | **integration-test-agent** | Testing | Generate integration tests |
+| **docker-agent** | Infrastructure | Generate Dockerfiles and docker-compose configs |
 | **agent-creator** | dotClaude | Create new custom agents |
 | **dotclaude-updater** | dotClaude | Update dotClaude from GitHub |
 | **agent-updater** | dotClaude | Update existing agent instructions |
@@ -142,7 +145,7 @@ dotClaude/
 │   ├── documentation/   # Doc generation agents (Yellow)
 │   ├── code/            # Code analysis agents (Red)
 │   ├── testing/         # Testing agents (Green)
-│   └── infrastructure/  # dotClaude management (Pink)
+│   └── infrastructure/  # Infrastructure & dotClaude management (Pink)
 ├── docs/                # Guidelines and roadmap
 └── install/             # Installation scripts
 ```
