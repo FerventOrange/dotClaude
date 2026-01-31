@@ -27,6 +27,10 @@ Before installing dotClaude, ensure you have:
 3. **Git** (for cloning and agent operations)
    - Check: `git --version`
 
+4. **GitHub CLI** (for PR workflows, installed automatically by the installer)
+   - Check: `gh --version`
+   - Install: `winget install GitHub.cli` or visit [cli.github.com](https://cli.github.com/)
+
 ## Installation
 
 ### Linux/macOS
@@ -61,6 +65,11 @@ cd dotClaude
 | **changelog-agent** | Documentation | Generate CHANGELOG.md from git history |
 | **doc-review-agent** | Documentation | Review documentation quality |
 | **code-cleanup-agent** | Code | Find redundant/duplicate code |
+| **code-review-agent** | Code | Review code for bugs and best practices |
+| **code-linting-agent** | Code | Set up and configure linting tools |
+| **dependency-agent** | Code | Validate dependencies across files |
+| **python-agent** | Code | Python-specific code generation |
+| **terraform-agent** | Code | Terraform infrastructure code generation |
 | **agent-creator** | dotClaude | Create new custom agents |
 | **dotclaude-updater** | dotClaude | Update dotClaude from GitHub |
 

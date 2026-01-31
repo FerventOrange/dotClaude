@@ -30,12 +30,37 @@ Analyze staged git changes and generate clear, conventional commit messages.
 - Write PR descriptions
 - Handle multi-commit workflows
 
+## Commit Message Format
+
+All commit messages **must** follow this format:
+
+```
+<type>/<scope> : <description>
+```
+
+**Rules:**
+- Type and scope are separated by `/`
+- A space, colon, space (` : `) separates scope from description
+- Description is lowercase, concise, and describes the change
+- This matches the PR title convention used by `git-pr-agent`
+
+**Examples:**
+
+| Change | Commit Message |
+|--------|---------------|
+| New agent added | `feat/agents : add code review agent` |
+| Bug fix in login | `fix/auth : resolve null check on login form` |
+| Update README | `docs/readme : add installation prerequisites` |
+| Refactor utils | `refactor/utils : extract shared helpers` |
+| Update deps | `chore/deps : bump dependencies to latest` |
+| Add unit tests | `test/auth : add login flow tests` |
+
 ## Workflow
 
 1. Request or analyze the staged changes (`git diff --staged`)
 2. Identify the type of change (feature, fix, refactor, etc.)
 3. Determine the scope/area affected
-4. Generate a concise subject line (50 chars or less)
+4. Generate a subject line following the `<type>/<scope> : <description>` format
 5. If needed, suggest a body with more details
 6. Present options to the user for selection
 
@@ -44,7 +69,7 @@ Analyze staged git changes and generate clear, conventional commit messages.
 ```
 Suggested commit message:
 
-<type prefix>/<subject>
+<type>/<scope> : <description>
 
 <optional body>
 

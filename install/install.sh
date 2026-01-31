@@ -100,6 +100,54 @@ install_claude_code() {
     esac
 }
 
+# Check if GitHub CLI is installed
+check_gh_installed() {
+    if command -v gh &> /dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Install GitHub CLI
+install_gh_cli() {
+    echo -e "${YELLOW}Installing GitHub CLI...${NC}"
+
+    case $OS in
+        linux)
+            if command -v apt-get &> /dev/null; then
+                echo "Using apt to install GitHub CLI..."
+                (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
+                    && sudo mkdir -p -m 755 /etc/apt/keyrings \
+                    && out=$(wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg) \
+                    && echo "$out" | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+                    && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+                    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+                    && sudo apt update \
+                    && sudo apt install gh -y
+            elif command -v dnf &> /dev/null; then
+                echo "Using dnf to install GitHub CLI..."
+                sudo dnf install 'dnf-command(config-manager)' -y
+                sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+                sudo dnf install gh -y
+            elif command -v brew &> /dev/null; then
+                echo "Using Homebrew to install GitHub CLI..."
+                brew install gh
+            else
+                echo -e "${YELLOW}[!] Could not auto-install GitHub CLI. Install manually:${NC}"
+                echo "  https://github.com/cli/cli#installation"
+            fi
+            ;;
+        windows)
+            echo -e "${YELLOW}On Windows, use the PowerShell install script or:${NC}"
+            echo "  winget install GitHub.cli"
+            ;;
+        *)
+            echo -e "${YELLOW}[!] Install GitHub CLI manually: https://github.com/cli/cli#installation${NC}"
+            ;;
+    esac
+}
+
 # Configure agent awareness
 configure_agent_awareness() {
     echo -e "${YELLOW}Configuring agent awareness...${NC}"
@@ -186,6 +234,14 @@ verify_installation() {
         echo -e "${RED}[X]${NC} Claude Code not found"
     fi
 
+    # Check GitHub CLI
+    if check_gh_installed; then
+        GH_VERSION=$(gh --version 2>/dev/null | head -1 || echo "unknown")
+        echo -e "${GREEN}[OK]${NC} GitHub CLI installed: $GH_VERSION"
+    else
+        echo -e "${YELLOW}[!]${NC} GitHub CLI not found (optional, needed for PR workflows)"
+    fi
+
     # Check custom instructions
     if [ -f "$CUSTOM_INSTRUCTIONS_FILE" ]; then
         echo -e "${GREEN}[OK]${NC} Custom instructions: $CUSTOM_INSTRUCTIONS_FILE"
@@ -229,17 +285,27 @@ main() {
     fi
     echo ""
 
-    # Step 2: Configure agent awareness
-    echo -e "${BLUE}Step 2: Agent Awareness Configuration${NC}"
+    # Step 2: Check/Install GitHub CLI
+    echo -e "${BLUE}Step 2: GitHub CLI${NC}"
+    if check_gh_installed; then
+        GH_VERSION=$(gh --version 2>/dev/null | head -1 || echo "installed")
+        echo -e "${GREEN}[OK] GitHub CLI already installed${NC} ($GH_VERSION)"
+    else
+        install_gh_cli
+    fi
+    echo ""
+
+    # Step 3: Configure agent awareness
+    echo -e "${BLUE}Step 3: Agent Awareness Configuration${NC}"
     configure_agent_awareness
     echo ""
 
-    # Step 3: Install agents
-    echo -e "${BLUE}Step 3: Install Agents${NC}"
+    # Step 4: Install agents
+    echo -e "${BLUE}Step 4: Install Agents${NC}"
     install_agents
     echo ""
 
-    # Step 4: Verify
+    # Step 5: Verify
     verify_installation
 
     echo ""
