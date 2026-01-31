@@ -1,6 +1,6 @@
 ---
 name: api-client-agent
-version: 1.0.0
+version: 1.1.0
 description: Generates typed API client code from OpenAPI, GraphQL, or tRPC schemas
 color: blue
 mcp_servers: [filesystem]
@@ -32,6 +32,12 @@ Generate typed client code for consuming APIs, automatically detecting the API s
 - Generate or modify OpenAPI/Swagger specs -> use `api-doc-agent`
 - Manage authentication tokens -> use `auth-agent`
 - Generate tests -> use `unit-test-agent`
+
+## Required Context
+
+- Project root with frontend dependencies (`package.json`) for client library detection
+- API schema files (OpenAPI spec, GraphQL SDL, tRPC router) or API base URL
+- Existing client code for pattern detection
 
 ## Client Library Detection
 
@@ -85,6 +91,16 @@ Generate typed client code for consuming APIs, automatically detecting the API s
 - **Schema parse errors**: Report specific parse errors and ask the user to fix the schema
 - **Unsupported API style**: Warn and suggest generating a plain fetch wrapper
 - **Missing type information**: Generate `unknown` types and flag for manual annotation
+
+## Examples
+
+| User Request | Agent Action |
+|-------------|-------------|
+| "Generate a typed client from my OpenAPI spec" | Parses spec, generates typed fetch functions and response types |
+| "Create React Query hooks from my GraphQL schema" | Generates typed query/mutation hooks with TanStack Query |
+| "Set up a tRPC client for my Next.js app" | Generates tRPC client config and typed procedure calls |
+| "Generate an Axios client with auth interceptors" | Creates configured Axios instance with token refresh |
+| "Create SWR hooks for my REST API endpoints" | Generates typed SWR hooks with error handling |
 
 ## Out of Scope Redirects
 

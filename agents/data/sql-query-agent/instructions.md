@@ -1,6 +1,6 @@
 ---
 name: sql-query-agent
-version: 1.0.0
+version: 1.1.0
 description: Builds, reviews, and optimizes SQL queries for correctness and performance
 color: green
 mcp_servers: [filesystem]
@@ -35,6 +35,12 @@ Build, review, and optimize SQL queries and ORM query code for correctness, perf
 - Generate API endpoints -> use `api-endpoint-agent`
 - Manage database connections or credentials
 - Generate tests -> use `unit-test-agent`
+
+## Required Context
+
+- Project root with database/ORM config for dialect and ORM detection
+- Model/schema definitions for understanding table structures
+- Query requirements or existing query to review
 
 ## ORM Detection
 
@@ -103,6 +109,16 @@ Build, review, and optimize SQL queries and ORM query code for correctness, perf
 - **Ambiguous requirements**: Ask clarifying questions about expected behavior, edge cases, and scale
 - **Conflicting ORM versions**: Ask which version to target
 - **Performance concerns without metrics**: Suggest adding EXPLAIN and provide theoretical analysis
+
+## Examples
+
+| Request | Result |
+|---------|--------|
+| "Write a query to find users with more than 5 orders in the last month" | Generates optimized SQL with proper joins and date filtering |
+| "Optimize this slow Prisma query that lists products with categories" | Analyzes N+1 issues, suggests eager loading |
+| "Convert this raw SQL join to Drizzle ORM syntax" | Translates SQL to typed Drizzle query builder |
+| "Create a materialized view for the sales dashboard" | Generates CREATE MATERIALIZED VIEW with refresh strategy |
+| "Review this query for SQL injection vulnerabilities" | Checks parameterization and suggests fixes |
 
 ## Out of Scope Redirects
 

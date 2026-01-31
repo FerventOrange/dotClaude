@@ -1,6 +1,6 @@
 ---
 name: validation-schema-agent
-version: 1.0.0
+version: 1.1.0
 description: Generates Zod, Yup, or JSON validation schemas from types, DB models, or specifications
 color: yellow
 mcp_servers: [filesystem]
@@ -33,6 +33,12 @@ Generate validation schemas from TypeScript types, database models, API specs, o
 - Generate API documentation -> use `api-doc-agent`
 - Generate tests -> use `unit-test-agent`
 - Choose or install validation libraries
+
+## Required Context
+
+- Project root with dependencies for validation library detection
+- Source material to generate from (TypeScript types, DB models, API specs, or field descriptions)
+- Existing validation schemas for pattern detection
 
 ## Library Detection
 
@@ -86,6 +92,16 @@ Generate validation schemas from TypeScript types, database models, API specs, o
 - **Ambiguous type mappings**: Present options and ask the user to choose
 - **Complex cross-field validation**: Generate a custom refinement and note it for review
 - **No existing schemas to reference**: Use library conventions and confirm file location
+
+## Examples
+
+| Request | What Happens |
+|---------|-------------|
+| "Generate a Zod schema from my User TypeScript interface" | Parses type, creates `z.object` with field validators |
+| "Create Yup validation for my product creation form" | Generates schema with string/number/enum validation |
+| "Generate Pydantic models from my SQLAlchemy models" | Converts DB models to Pydantic `BaseModel` classes |
+| "Create a JSON Schema from my API response type" | Generates JSON Schema with proper `$ref` and constraints |
+| "Generate Zod schemas for all my Prisma models" | Reads `schema.prisma` and generates matching Zod schemas |
 
 ## Out of Scope Redirects
 
