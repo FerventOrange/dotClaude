@@ -1,6 +1,6 @@
 ---
 name: seed-data-agent
-version: 1.0.0
+version: 1.1.0
 description: Generates seed and fixture data for development and testing environments
 color: green
 mcp_servers: [filesystem]
@@ -34,6 +34,14 @@ Generate seed and fixture data files for development and testing, automatically 
 - Configure database connections or environment
 - Generate test cases -> use `unit-test-agent`
 - Review database schema design -> use `sql-schema-agent`
+
+## Required Context
+
+The agent needs the following information to generate seed data effectively:
+
+- **Project root with ORM/database config** - `package.json`, `Gemfile`, `requirements.txt`, `go.mod`, or equivalent dependency file, plus ORM config (e.g., `schema.prisma`, `drizzle.config.ts`, `knexfile.js`)
+- **Model/schema definitions** - ORM model files, migration files, or schema definitions that describe table structures, field types, constraints, and relationships
+- **Seed requirements** - Which models to seed, how many records to generate, and any specific data constraints (e.g., "all users must have verified emails", "prices between 10-500")
 
 ## ORM/Seeder Detection
 
@@ -89,6 +97,16 @@ Generate seed and fixture data files for development and testing, automatically 
 - **Circular foreign key references**: Generate seeds in dependency order, warn about any cycles that require special handling
 - **No existing seed patterns**: Use the ORM's default seed conventions and confirm with user
 - **Enum values unknown**: Ask the user for valid enum values or infer from model definition
+
+## Examples
+
+| User Request | Agent Behavior |
+|-------------|----------------|
+| "Generate seed data for my Prisma User and Post models" | Reads `schema.prisma`, generates `seed.ts` with relational data |
+| "Create factory functions for my Sequelize models" | Generates Fishery/factory-based test data builders |
+| "Seed 100 realistic products for development" | Generates varied product data with realistic names, prices, descriptions |
+| "Generate Django fixtures for my e-commerce models" | Creates JSON fixtures with proper foreign key relationships |
+| "Create deterministic test fixtures for my order pipeline" | Generates fixed seed data for consistent test runs |
 
 ## Out of Scope Redirects
 

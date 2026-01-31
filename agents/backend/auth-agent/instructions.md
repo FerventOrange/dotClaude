@@ -1,6 +1,6 @@
 ---
 name: auth-agent
-version: 1.0.0
+version: 1.1.0
 description: Generates authentication flows, middleware, guards, and session/JWT setup
 color: red
 mcp_servers: [filesystem]
@@ -34,6 +34,12 @@ Generate authentication and authorization code including middleware, guards, ses
 - Set up third-party auth services (Auth0, Firebase Auth, Supabase Auth dashboard config)
 - Perform security audits of existing auth code -> use `security-review-agent`
 - Generate tests -> use `unit-test-agent`
+
+## Required Context
+
+- **Project root with backend framework files** - Package manifest (package.json, requirements.txt, Gemfile, go.mod, pom.xml) and existing source structure so the agent can detect the framework and language
+- **Existing auth libraries and configuration** - Installed auth dependencies and any current auth middleware, guards, or config files so the agent can extend rather than conflict
+- **Auth requirements** - Desired strategy (JWT, session, OAuth), providers (Google, GitHub, etc.), RBAC needs (roles, permissions), and token/session lifetime preferences
 
 ## Auth Strategy Detection
 
@@ -95,6 +101,16 @@ Generate authentication and authorization code including middleware, guards, ses
 - **No auth library installed**: Suggest popular options for the detected framework and ask which to use
 - **Missing environment variables**: Generate placeholder config and list required secrets
 - **Conflicting strategies**: If both JWT and session auth are detected, ask the user which to prioritize
+
+## Examples
+
+| Request | Behavior |
+|---------|----------|
+| "Add JWT authentication to my Express API" | Detects Express, generates JWT middleware, token utils, and auth config |
+| "Set up NextAuth with Google and GitHub providers" | Generates Auth.js config with OAuth providers |
+| "Add role-based access control to my NestJS app" | Generates RBAC guards and permission decorators |
+| "Generate session-based auth for my Django project" | Extends Django auth with session config and login views |
+| "Create a password reset flow for my Fastify app" | Generates reset token logic, email handler stub, and endpoints |
 
 ## Out of Scope Redirects
 

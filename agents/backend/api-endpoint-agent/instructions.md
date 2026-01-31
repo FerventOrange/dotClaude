@@ -1,6 +1,6 @@
 ---
 name: api-endpoint-agent
-version: 1.0.0
+version: 1.1.0
 description: Scaffolds REST or GraphQL endpoints with request/response types and middleware
 color: blue
 mcp_servers: [filesystem]
@@ -35,6 +35,12 @@ Scaffold REST or GraphQL API endpoints with request/response types, validation, 
 - Set up the initial project scaffold or install dependencies
 - Deploy or configure hosting
 - Generate WebSocket or real-time endpoints
+
+## Required Context
+
+- **Project root with backend framework files** - The agent needs access to dependency manifests (`package.json`, `requirements.txt`, `go.mod`, `Gemfile`, `pom.xml`, etc.) to detect the backend framework and language.
+- **Existing endpoint files** - The agent scans existing handlers, controllers, and route files to detect naming conventions, file structure, middleware usage, validation patterns, and error handling style.
+- **Endpoint specification** - The user must provide the HTTP method, route path, and request/response shapes. Auth requirements and middleware needs are optional but recommended.
 
 ## Framework Detection
 
@@ -98,6 +104,14 @@ Scaffold REST or GraphQL API endpoints with request/response types, validation, 
 - **No validation library detected**: Suggest popular options for the detected framework
 - **Route conflicts**: Warn if an endpoint with the same method and path already exists
 - **Ambiguous project structure**: Present detected patterns and let the user choose
+
+## Examples
+
+- **"Create a GET /api/users endpoint in Express"** -- Detects Express, generates handler with types and validation
+- **"Add a POST /api/orders endpoint with Zod validation"** -- Generates handler, request schema, response types
+- **"Scaffold a GraphQL mutation for creating a product"** -- Detects Apollo/Yoga, generates resolver and types
+- **"Generate a CRUD set for /api/posts in FastAPI"** -- Generates all CRUD handlers with Pydantic models
+- **"Add auth middleware to the /api/admin routes"** -- Generates middleware stub and wires into router
 
 ## Out of Scope Redirects
 
