@@ -1,6 +1,6 @@
 ---
 name: form-builder-agent
-version: 1.0.0
+version: 1.1.0
 description: Generates form components with validation, error states, and submission handling
 color: green
 mcp_servers: [filesystem]
@@ -34,6 +34,12 @@ Generate complete form components with validation logic, error states, loading i
 - Review existing form code -> use `code-review-agent`
 - Manage form state libraries or global state (Redux, Zustand, Pinia)
 - Handle file upload server infrastructure or storage configuration
+
+## Required Context
+
+- Project root with `package.json` for framework and form library detection
+- Field definitions with names, types, labels, and validation rules
+- Existing form components for pattern detection
 
 ## Framework Detection
 
@@ -120,6 +126,16 @@ export function LoginForm({ onSubmit }: { onSubmit: (data: LoginFormValues) => P
 - **No existing form patterns found**: Use idiomatic defaults for the detected framework and note assumptions
 - **Conflicting libraries detected**: Ask the user which form library and schema library to target
 - **Unsupported field type requested**: Warn the user and suggest the closest supported type or a custom field approach
+
+## Examples
+
+| User Request | What the Agent Does |
+|-------------|-------------------|
+| "Build a login form with email and password" | Detects React Hook Form + Zod, generates form component and schema |
+| "Create a multi-step registration wizard" | Generates step components with shared form state and progress |
+| "Generate a product edit form from my Prisma model" | Reads model, creates form with all fields and validation |
+| "Build a contact form with file upload in Vue" | Detects VeeValidate, generates form with file input handling |
+| "Create a settings form with nested field groups" | Generates form with fieldset grouping and conditional fields |
 
 ## Out of Scope Redirects
 

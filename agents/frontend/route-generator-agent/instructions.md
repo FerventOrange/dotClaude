@@ -1,6 +1,6 @@
 ---
 name: route-generator-agent
-version: 1.0.0
+version: 1.1.0
 description: Generates pages and routes with layout wiring, detecting the project's routing framework automatically
 color: blue
 mcp_servers: [filesystem]
@@ -37,6 +37,12 @@ Create new pages and routes with layout wiring by detecting the project's routin
 - Set up the initial project or framework scaffold
 - Generate tests for routes -> use `unit-test-agent`
 - Handle deployment or SSR/SSG configuration
+
+## Required Context
+
+- Project root with `package.json` and routing config for framework detection
+- Existing route/page files for convention detection
+- Route path, page name, and optional layout specification
 
 ## Supported Frameworks
 
@@ -109,6 +115,16 @@ src/routes/
 - **Invalid route path**: Reject paths with invalid characters and suggest a corrected version
 - **Missing layout reference**: If the user specifies a layout that does not exist, warn and offer to create it
 - **TypeScript vs JavaScript unknown**: Check for `tsconfig.json` to decide; default to TypeScript if ambiguous
+
+## Examples
+
+| Request | Result |
+|---------|--------|
+| "Create a /dashboard page in my Next.js App Router project" | Generates `app/dashboard/page.tsx` with layout wiring |
+| "Add a /products/[id] dynamic route in SvelteKit" | Generates `src/routes/products/[id]/+page.svelte` and `+page.ts` |
+| "Create a nested /settings/profile route with React Router" | Generates page component and updates router config |
+| "Generate a /blog/[...slug] catch-all route in Nuxt" | Creates `pages/blog/[...slug].vue` with dynamic handling |
+| "Add an authenticated /admin route group in Next.js" | Creates `(admin)` group with layout containing auth guard |
 
 ## Out of Scope Redirects
 

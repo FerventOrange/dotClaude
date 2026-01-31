@@ -1,6 +1,6 @@
 ---
 name: component-generator-agent
-version: 1.0.0
+version: 1.1.0
 description: Scaffolds UI components with styles, tests, and exports for any frontend framework
 color: pink
 mcp_servers: [filesystem]
@@ -36,6 +36,12 @@ Scaffold UI components with boilerplate including styles, tests, and exports, au
 - Generate API calls or data-fetching logic
 - Create full page layouts or multi-component compositions
 - Modify existing components
+
+## Required Context
+
+- **Project root** with `package.json` and framework config files for detection
+- **Existing component files** for convention and pattern detection
+- **Component name, type, and target directory** provided by the user
 
 ## Workflow
 
@@ -108,6 +114,16 @@ Scaffold UI components with boilerplate including styles, tests, and exports, au
 - **No testing framework detected**: Ask the user which testing framework to use, suggest popular options for the detected framework
 - **Component name conflicts**: Warn the user that a component with the same name already exists at the target path and ask how to proceed
 - **Ambiguous project structure**: Present detected options and let the user choose the target directory
+
+## Examples
+
+| User Request | Agent Behavior |
+|-------------|----------------|
+| "Create a Button component for my React project" | Detects React + Tailwind, generates `Button.tsx`, `Button.test.tsx`, updates barrel export |
+| "Scaffold a Card component in Vue" | Detects Vue 3, generates `Card.vue` with scoped styles and test file |
+| "Generate a Modal component with TypeScript" | Detects framework, generates typed props interface and component |
+| "Create a Sidebar layout component in SvelteKit" | Generates `Sidebar.svelte` with slot-based composition |
+| "Add a DataTable component following existing patterns" | Scans existing components, matches naming/structure conventions |
 
 ## Out of Scope Redirects
 

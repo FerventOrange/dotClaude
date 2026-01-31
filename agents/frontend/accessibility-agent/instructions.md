@@ -1,6 +1,6 @@
 ---
 name: accessibility-agent
-version: 1.0.0
+version: 1.1.0
 description: Audits UI components for WCAG 2.1 AA compliance including ARIA, contrast, keyboard nav, and semantic HTML
 color: yellow
 mcp_servers: [filesystem]
@@ -38,6 +38,12 @@ Audit UI components for WCAG 2.1 AA compliance covering ARIA attributes, color c
 - Generate VPAT or compliance documentation
 - Perform security audits -> use `security-review-agent`
 - Review general code quality or logic -> use `code-review-agent`
+
+## Required Context
+
+- File paths or directory to audit
+- UI framework context (auto-detected or user-specified)
+- Any specific WCAG criteria or areas of concern to focus on (optional)
 
 ## WCAG 2.1 AA Checklist
 
@@ -124,6 +130,16 @@ Audit UI components for WCAG 2.1 AA compliance covering ARIA attributes, color c
 - **Scope too large (>100 files)**: Ask the user to narrow the target or confirm they want a full audit
 - **No findings detected**: Report a clean result with a note that manual testing with assistive technology is still recommended
 - **Color values cannot be resolved** (CSS variables, theme tokens): Flag for manual contrast verification and note the limitation
+
+## Examples
+
+| Prompt | What It Does |
+|--------|-------------|
+| "Audit my LoginForm component for accessibility" | Reviews form labels, error announcements, keyboard nav, and ARIA |
+| "Check all components in src/components/ for WCAG compliance" | Performs full directory audit with severity-rated findings |
+| "Review my Modal component for keyboard trap issues" | Checks focus management, escape key handling, focus restoration |
+| "Audit the navigation bar for screen reader support" | Reviews landmarks, ARIA labels, skip links, and menu patterns |
+| "Check color contrast in my Button component styles" | Evaluates text/background pairings against WCAG AA thresholds |
 
 ## Out of Scope Redirects
 
