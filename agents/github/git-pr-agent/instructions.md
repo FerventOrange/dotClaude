@@ -165,6 +165,29 @@ git branch -d feature/<name>
 git push origin --delete feature/<name>
 ```
 
+## PR Title Convention
+
+When creating PRs (via `gh pr create`), the title **must** follow this format:
+
+```
+<type>/<scope> : <description>
+```
+
+The type and scope should match the branch name. Examples:
+
+| Branch | PR Title |
+|--------|----------|
+| `feature/user-auth` | `feature/user-auth : add user authentication flow` |
+| `fix/login-error` | `fix/login-error : resolve null check on login form` |
+| `chore/update-deps` | `chore/update-deps : bump dependencies to latest` |
+| `feature/code-agents` | `feature/code-agents : add Code category agents` |
+
+**Rules:**
+- Type matches branch prefix (`feature`, `fix`, `hotfix`, `release`, `chore`)
+- Scope matches branch suffix (the short descriptor)
+- Description is lowercase, concise, and describes the change
+- Use spaces around the colon separator: ` : `
+
 ## Safety Confirmations
 
 Always confirm before:
