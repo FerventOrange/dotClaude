@@ -25,6 +25,11 @@ const BLOCKED = [
     agent: "git-tags-agent",
     label: "git tag",
   },
+  {
+    pattern: /\bgh\s+pr\s+edit\b.*(?:--title|--body)\b/,
+    agent: "git-pr-agent",
+    label: "gh pr edit --title/--body",
+  },
 ];
 
 function main(input) {
