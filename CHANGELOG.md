@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **integration-test-agent** - Integration test generation
   - **unit-test-agent** - Unit test generation
 - **agent-review-agent** for instruction file quality review and validation
+- 3 new agents across infrastructure, github, and code categories:
+  - **docker-agent** - Dockerfile, docker-compose.yml, and .dockerignore generation with multi-stage builds, security hardening, and compose orchestration
+  - **pr-review-agent** - GitHub pull request review with diff analysis, issue detection, and structured review comments via gh CLI
+  - **security-review-agent** - Security vulnerability review covering OWASP Top 10, secrets detection, dependency CVEs, and language-specific anti-patterns
 - Scope detection for branch awareness in git workflow agents
 
 ### Changed
