@@ -188,6 +188,48 @@ The type and scope should match the branch name. Examples:
 - Description is lowercase, concise, and describes the change
 - Use spaces around the colon separator: ` : `
 
+## Scope Detection
+
+Before making changes, **always check if the current branch is appropriate** for the work being requested. Compare the branch name/purpose against the incoming task.
+
+### When to Suggest a New Branch
+
+A new branch should be created when the requested work:
+- Targets a **different feature area** than the branch name implies
+- Involves a **different change type** (e.g., on a `feature/` branch but doing a `fix/`)
+- Touches **unrelated files or systems** from what the branch has been working on
+- Is a **standalone deliverable** that should have its own PR
+
+### How to Handle Scope Changes
+
+```
+⚠ Scope change detected.
+
+Current branch: feature/code-agents (adding code category agents)
+Requested work: update authentication middleware
+
+This looks like separate work. Options:
+1. Commit current changes, create new branch (recommended)
+2. Stash current changes, create new branch
+3. Continue on current branch (not recommended)
+
+Select [1-3]:
+```
+
+### Workflow for Scope Switch
+
+1. Check for uncommitted changes on the current branch
+2. Commit or stash them
+3. Switch to `main` and pull latest
+4. Create a new branch with an appropriate name
+5. Begin the new work
+
+### When to Stay on the Current Branch
+
+- The work is a **direct extension** of the branch's purpose
+- It's a **small fix discovered** while working on the feature (and directly related)
+- The user explicitly asks to keep it on the same branch
+
 ## Safety Confirmations
 
 Always confirm before:

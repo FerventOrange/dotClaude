@@ -157,6 +157,8 @@ Continue? (y/n/skip)
 
 **Never commit directly to `main`.** Always use feature branches and PRs.
 
+**Scope awareness:** If the user requests work that doesn't fit the current branch's purpose, suggest creating a new branch before starting. Use `git-pr-agent` to handle the branch switch. Keep branches focused on a single deliverable.
+
 ### Discovery
 Check available agents: `ls ~/.claude/agents/`
 Read agent details: `cat ~/.claude/agents/[name]/instructions.md`
