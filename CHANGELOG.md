@@ -8,6 +8,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Frontend agent cluster** with 4 new agents (PR #6):
+  - **component-generator** - UI component scaffolding
+  - **form-builder** - Form generation and validation
+  - **route-generator** - Route/page scaffolding
+  - **accessibility** - Accessibility audit and remediation
+- **Backend agent cluster** with 3 new agents (PR #7):
+  - **api-endpoint** - REST/GraphQL endpoint generation
+  - **auth** - Authentication and authorization scaffolding
+  - **seed-data** - Database seed data generation
+- **Infrastructure agent cluster** with 3 new agents (PR #8):
+  - **env-config** - Environment configuration management
+  - **cicd** - CI/CD pipeline generation
+  - **deployment** - Deployment configuration and scripts
+- **Data agent cluster** with 6 new agents (PR #9):
+  - **api-client** - API client generation
+  - **state-management** - State management scaffolding
+  - **validation-schema** - Data validation schema generation
+  - **sql-migration** - SQL migration file generation
+  - **sql-query** - SQL query generation
+  - **sql-schema** - SQL schema design
+- Agent retry rule to prevent root-level fallback when subagents fail (PR #10)
+- Git command enforcement hooks to install scripts (PR #5, #11)
+- Hook to block `gh pr edit` title/body modifications outside pr-agent
+
+### Changed
+- Added required context and examples sections to frontend agent instructions
+- Added required context and examples sections to backend agent instructions
+- Added required context and examples sections to infra agent instructions
+- Expanded agent usage guidelines with delegation and review rules
+
+### Fixed
+- Hardened block-git-commands hook against bypass and resource abuse
+- Anchored regex patterns in hooks, added stdin timeout and audit logging
+- Applied agent-review findings to all data agents
+
+## [0.4.0] - 2026-01-31
+
+### Added
 - 6 new agents across documentation, github, infrastructure, and testing categories:
   - **api-doc-agent** - API documentation generation
   - **git-sync-agent** - Git synchronization workflows
@@ -16,11 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **integration-test-agent** - Integration test generation
   - **unit-test-agent** - Unit test generation
 - **agent-review-agent** for instruction file quality review and validation
-- 3 new agents across infrastructure, github, and code categories:
-  - **docker-agent** - Dockerfile, docker-compose.yml, and .dockerignore generation with multi-stage builds, security hardening, and compose orchestration
-  - **pr-review-agent** - GitHub pull request review with diff analysis, issue detection, and structured review comments via gh CLI
-  - **security-review-agent** - Security vulnerability review covering OWASP Top 10, secrets detection, dependency CVEs, and language-specific anti-patterns
+- **docker** agent for container configuration
+- **pr-review** agent for pull request review workflows
+- **security-review** agent for security audit and analysis
 - Scope detection for branch awareness in git workflow agents
+- Git command enforcement hooks to install scripts
+- Hook to block `gh pr edit` title/body modifications outside pr-agent
 
 ### Changed
 - Slimmed custom instructions to behavioral rules only, removing redundant agent lookup tables and recommendation templates
@@ -30,12 +69,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added color field to agent-creator template for propagation
 - Rewrote project-goals.md to reflect 22-agent state
 - Rewrote agent-awareness.md with all 22 agents and correct paths
+- Expanded agent usage guidelines with delegation and review rules
+- Added agent retry rule to prevent root-level fallback
 
 ### Fixed
 - `((count++))` crash with `set -e` in install.sh and list-agents.sh
 - Removed no-op `shift` in install.sh argument parsing
 - Fixed cross-references: api-doc-generator to api-doc-agent, git-commit-helper to git-commit-agent
 - Added `nul` to .gitignore for Windows platform artifact
+- Addressed review agent findings across repo
 
 ## [0.3.0] - 2026-01-31
 
@@ -111,7 +153,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/FerventOrange/dotClaude/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/FerventOrange/dotClaude/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/FerventOrange/dotClaude/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/FerventOrange/dotClaude/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/FerventOrange/dotClaude/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/FerventOrange/dotClaude/releases/tag/v0.1.0
