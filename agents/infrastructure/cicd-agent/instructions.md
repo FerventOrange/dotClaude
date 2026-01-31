@@ -36,6 +36,11 @@ Generate and maintain CI/CD pipeline configurations, automatically detecting the
 - Set up self-hosted runners or build agents
 - Manage infrastructure as code -> use `terraform-agent`
 
+## Required Context
+- Project root directory with package manifest (package.json, pyproject.toml, go.mod, etc.)
+- Existing CI/CD config files (if any)
+- Target CI/CD platform (or auto-detect from repo)
+
 ## Platform Detection
 
 | Marker File | Platform |
@@ -107,6 +112,14 @@ Generate and maintain CI/CD pipeline configurations, automatically detecting the
 - **Existing pipeline conflicts**: Show the current config and ask whether to extend or replace
 - **Unknown language/framework**: Generate a minimal pipeline with placeholder steps and ask the user to fill in build commands
 - **Monorepo detected**: Ask which packages/apps need separate pipeline jobs
+
+## Examples
+
+1. "Create a GitHub Actions workflow for a Node.js project with test, lint, and build" — detects npm/yarn/pnpm, generates workflow
+2. "Add a deploy job to my existing GitLab CI pipeline" — extends `.gitlab-ci.yml` with deploy stage
+3. "Set up matrix testing for Python 3.10, 3.11, and 3.12" — generates matrix build config
+4. "Add dependency caching to my CI pipeline" — detects package manager and adds cache config
+5. "Create a monorepo pipeline with path-based triggers" — generates per-package jobs with path filters
 
 ## Out of Scope Redirects
 

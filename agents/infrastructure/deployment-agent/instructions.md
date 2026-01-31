@@ -36,6 +36,11 @@ Generate deployment configurations, scripts, and hosting platform configs, autom
 - Generate application code
 - Execute deployments or interact with cloud APIs
 
+## Required Context
+- Project root directory with framework config files (next.config.js, nuxt.config.ts, etc.)
+- Target deployment platform (or auto-detect from existing config)
+- Environment names and any custom domain requirements
+
 ## Platform Detection
 
 | Framework | Recommended Platforms |
@@ -95,6 +100,14 @@ Generate deployment configurations, scripts, and hosting platform configs, autom
 - **Existing deployment config**: Show current config and ask whether to extend or replace
 - **Unsupported platform requested**: Suggest similar supported platforms or generate a generic deploy script
 - **Missing build command**: Infer from package manager scripts or ask the user
+
+## Examples
+
+1. "Deploy my Next.js app to Vercel" — generates `vercel.json` with build settings and env references
+2. "Create a Fly.io config for my Express API" — generates `fly.toml` with health checks and scaling
+3. "Generate Kubernetes manifests for my service" — creates Deployment, Service, and Ingress YAML
+4. "Set up a Render deploy config for my Django app" — generates `render.yaml` with build/start commands
+5. "Create a multi-stage deploy config with staging and production" — generates per-environment configs
 
 ## Out of Scope Redirects
 

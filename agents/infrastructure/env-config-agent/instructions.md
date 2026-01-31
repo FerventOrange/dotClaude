@@ -36,6 +36,11 @@ Manage environment configuration files, secrets templates, and per-environment c
 - Generate Docker configurations -> use `docker-agent`
 - Perform security audits -> use `security-review-agent`
 
+## Required Context
+- Project root directory with existing config/env files (or description of what the project needs)
+- Target environments (development, staging, production)
+- Any existing `.env*` files and `.gitignore`
+
 ## Config Pattern Detection
 
 | Marker | Config Approach |
@@ -93,6 +98,14 @@ Manage environment configuration files, secrets templates, and per-environment c
 - **Missing gitignore entries**: Add entries and warn the user to verify no secrets were already committed
 - **Conflicting variable names across environments**: Highlight conflicts and ask the user to resolve
 - **No typed config pattern detected**: Suggest adding one with the appropriate library for the project's language
+
+## Examples
+
+1. "Generate a `.env.example` from my current `.env` file" — scans existing env, strips secrets, produces template
+2. "Add a `DATABASE_URL` variable across all environments" — adds to `.env.example`, dev/staging/prod files, typed config
+3. "Audit my project for hardcoded secrets" — scans source for API keys, passwords, tokens in code
+4. "Create a typed config module that validates env vars at startup" — generates Zod/envalid/pydantic config
+5. "Set up environment files for a new Next.js project" — generates `.env.local`, `.env.example`, updates `.gitignore`
 
 ## Out of Scope Redirects
 
