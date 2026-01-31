@@ -1,6 +1,6 @@
 ---
 name: debug-agent
-version: 1.0.0
+version: 1.0.1
 description: Processes and analyzes error outputs to identify root causes and suggest targeted fixes
 color: green
 mcp_servers: [filesystem]
@@ -95,5 +95,5 @@ Parse error outputs, stack traces, and build logs to identify root causes, pinpo
 
 - Code review or quality analysis -> `code-review-agent`
 - Writing or running unit tests -> `unit-test-agent`
-- Commit message help -> `git-commit-helper`
+- Commit message help -> `git-commit-agent`
 - Create new agent -> `agent-creator`

@@ -1,6 +1,6 @@
 ---
 name: code-cleanup-agent
-version: 1.0.0
+version: 1.1.0
 description: Identifies redundant, duplicate, and dead code for cleanup
 color: red
 mcp_servers: [filesystem, git]
@@ -28,6 +28,16 @@ Analyze repositories to identify redundant, duplicate, and dead code, generating
 - Analyze binary files or generated code
 - Review code for security issues
 - Refactor code (only identifies what to clean up)
+
+## Workflow
+
+1. **Identify Scope** - Determine target directory or files to analyze
+2. **Scan for Duplicates** - Find functions and blocks with >80% similar content
+3. **Detect Dead Code** - Identify unused imports, uncalled functions, and unreachable code
+4. **Find Redundant Files** - Locate overlapping docs, duplicate configs, and backup files
+5. **Check Dependencies** - Find unused packages in manifest files
+6. **Prioritize Findings** - Classify issues by severity (HIGH/MEDIUM/LOW)
+7. **Generate Report** - Produce structured cleanup report with file locations and recommendations
 
 ## Detection Patterns
 

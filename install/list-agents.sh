@@ -63,7 +63,7 @@ for category_dir in "$AGENTS_DIR"/*/; do
                     if [ -n "$description" ]; then
                         echo -e "    $description"
                     fi
-                    ((total_count++))
+                    total_count=$((total_count + 1))
                 fi
             fi
         done

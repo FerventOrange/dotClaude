@@ -1,6 +1,6 @@
 ---
 name: dotclaude-updater
-version: 1.0.0
+version: 1.1.0
 description: Updates local dotClaude installation from GitHub
 color: pink
 mcp_servers: [filesystem, git]
@@ -69,3 +69,12 @@ Verification: [PASSED | FAILED]
 - Run regularly to stay current
 - Review changes before pulling in production
 - Back up local customizations before major updates
+
+## Out of Scope Redirects
+
+| Request | Redirect To |
+|---------|-------------|
+| "Create a new agent" | `agent-creator` |
+| "Update agent instructions" | `agent-updater` |
+| "Review agent quality" | `agent-review-agent` |
+| "Commit these changes" | `git-commit-agent` |

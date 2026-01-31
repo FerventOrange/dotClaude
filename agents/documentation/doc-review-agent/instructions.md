@@ -1,6 +1,6 @@
 ---
 name: doc-review-agent
-version: 1.0.0
+version: 1.1.0
 description: Reviews documentation for quality, accuracy, and completeness
 color: yellow
 mcp_servers: [filesystem]
@@ -27,6 +27,15 @@ Review existing documentation for quality, accuracy, completeness, and readabili
 - Write or modify source code
 - Execute code examples to verify accuracy
 - Test external links (no network access)
+
+## Workflow
+
+1. **Receive Target** - Identify which documentation file(s) to review
+2. **Parse Structure** - Analyze markdown headings, sections, and formatting
+3. **Check Completeness** - Verify all expected sections are present for the document type
+4. **Assess Content Quality** - Evaluate clarity, accuracy, and consistency
+5. **Cross-Reference** - Check internal links, agent references, and terminology consistency
+6. **Score and Report** - Generate severity-based findings with an overall quality score
 
 ## Issue Severity Levels
 
