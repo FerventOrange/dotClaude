@@ -1,6 +1,6 @@
 ---
 name: agent-creator
-version: 1.0.0
+version: 1.1.0
 description: Creates new scoped agents with all required files (USER-TRIGGERED ONLY)
 color: pink
 mcp_servers: [filesystem]
@@ -57,6 +57,7 @@ Create a single `instructions.md` file:
 name: agent-name
 version: 1.0.0
 description: One-sentence purpose
+color: [blue|yellow|red|green|pink]
 mcp_servers: [list]
 ---
 

@@ -30,7 +30,6 @@ for arg in "$@"; do
     case $arg in
         --skip-claude-install)
             SKIP_CLAUDE_INSTALL=true
-            shift
             ;;
     esac
 done
@@ -209,7 +208,7 @@ install_agents() {
                     rm -rf "$dest_agent_dir"
                     cp -r "$agent_dir" "$dest_agent_dir"
                     echo "  Installed: $agent_name ($category_name)"
-                    ((installed_count++))
+                    installed_count=$((installed_count + 1))
                 fi
             done
         fi

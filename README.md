@@ -61,17 +61,27 @@ cd dotClaude
 | Agent | Category | Purpose |
 |-------|----------|---------|
 | **git-commit-agent** | GitHub | Suggest conventional commit messages |
+| **git-pr-agent** | GitHub | Manage branches for PR workflows |
+| **git-tags-agent** | GitHub | Manage git tags and version releases |
+| **git-issues-agent** | GitHub | Create well-formatted GitHub issues |
+| **git-sync-agent** | GitHub | Sync forks with upstream repositories |
 | **readme-agent** | Documentation | Generate/update README.md files |
 | **changelog-agent** | Documentation | Generate CHANGELOG.md from git history |
 | **doc-review-agent** | Documentation | Review documentation quality |
+| **api-doc-agent** | Documentation | Generate API documentation from code |
 | **code-cleanup-agent** | Code | Find redundant/duplicate code |
 | **code-review-agent** | Code | Review code for bugs and best practices |
 | **code-linting-agent** | Code | Set up and configure linting tools |
 | **dependency-agent** | Code | Validate dependencies across files |
 | **python-agent** | Code | Python-specific code generation |
 | **terraform-agent** | Code | Terraform infrastructure code generation |
+| **debug-agent** | Testing | Parse errors and identify root causes |
+| **unit-test-agent** | Testing | Generate unit tests for functions/classes |
+| **integration-test-agent** | Testing | Generate integration tests |
 | **agent-creator** | dotClaude | Create new custom agents |
 | **dotclaude-updater** | dotClaude | Update dotClaude from GitHub |
+| **agent-updater** | dotClaude | Update existing agent instructions |
+| **agent-review-agent** | dotClaude | Review agent instructions for quality |
 
 ## Usage Examples
 
