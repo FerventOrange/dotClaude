@@ -15,12 +15,14 @@ Before responding to tasks, check if a specialized agent exists that matches the
 - `readme-agent` - Generate/update README.md files
 - `changelog-agent` - Generate/update CHANGELOG.md from git history
 - `doc-review-agent` - Review documentation quality
+- `api-doc-agent` - Generate API documentation from source code
 
 **Git Workflows:**
 - `git-commit-agent` - Suggest conventional commit messages
 - `git-pr-agent` - Manage branches for PR workflows
 - `git-tags-agent` - Manage git tags and version releases
 - `git-issues-agent` - Create well-formatted GitHub issues
+- `git-sync-agent` - Sync forks with upstream repositories
 
 **Code Quality:**
 - `code-cleanup-agent` - Find redundant/duplicate code for deletion
@@ -30,9 +32,15 @@ Before responding to tasks, check if a specialized agent exists that matches the
 - `python-agent` - Python-specific code generation
 - `terraform-agent` - Terraform infrastructure code generation
 
+**Testing:**
+- `debug-agent` - Parse error outputs and identify root causes
+- `unit-test-agent` - Generate unit tests for functions/classes
+- `integration-test-agent` - Generate integration tests for component interactions
+
 **Infrastructure:**
 - `agent-creator` - Create new agents (ONLY when user explicitly requests)
 - `dotclaude-updater` - Update and verify dotClaude from GitHub
+- `agent-updater` - Update existing agent instructions (ONLY when user explicitly requests)
 
 ### Agent Recommendation Rules
 
@@ -79,6 +87,12 @@ Would you like to use the [agent-name] agent? (y/n)
 | "check dependencies", "unused packages" | dependency-agent | `claude --agent dependency-agent` |
 | "write python code", "python function" | python-agent | `claude --agent python-agent` |
 | "terraform module", "infrastructure code" | terraform-agent | `claude --agent terraform-agent` |
+| "sync fork", "update from upstream" | git-sync-agent | `claude --agent git-sync-agent` |
+| "API docs", "document endpoints" | api-doc-agent | `claude --agent api-doc-agent` |
+| "debug error", "stack trace" | debug-agent | `claude --agent debug-agent` |
+| "write unit tests", "test function" | unit-test-agent | `claude --agent unit-test-agent` |
+| "integration tests", "test workflow" | integration-test-agent | `claude --agent integration-test-agent` |
+| "update agent", "modify agent" | agent-updater | `claude --agent agent-updater` |
 | "update dotClaude" | dotclaude-updater | `claude --agent dotclaude-updater` |
 
 ### Special Rules

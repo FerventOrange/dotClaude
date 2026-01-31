@@ -14,8 +14,7 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 - [x] **git-tags-agent** - Manage repository topics and version tags
 - [x] **git-issues-agent** - Create and manage GitHub issues
 
-### Planned
-- [ ] **git-sync-agent** - Sync forks with upstream repositories
+- [x] **git-sync-agent** - Sync forks with upstream repositories
 
 ---
 
@@ -26,8 +25,7 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 - [x] **readme-agent** - Generates and updates README.md files
 - [x] **changelog-agent** - Generates CHANGELOG.md from git history
 
-### Planned
-- [ ] **api-doc-agent** - Creates API documentation from code
+- [x] **api-doc-agent** - Creates API documentation from code
 
 ---
 
@@ -45,10 +43,10 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 
 ## Testing Agents (Green)
 
-### Planned
-- [ ] **debug-agent** - Processes and analyzes error outputs
-- [ ] **unit-test-agent** - Generates unit tests
-- [ ] **integration-test-agent** - Generates integration tests
+### Completed
+- [x] **debug-agent** - Processes and analyzes error outputs
+- [x] **unit-test-agent** - Generates unit tests
+- [x] **integration-test-agent** - Generates integration tests
 
 ---
 
@@ -58,8 +56,7 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 - [x] **agent-creator** - Creates new agent instruction files (user-triggered only)
 - [x] **dotclaude-updater** - Updates local installation from GitHub
 
-### Planned
-- [ ] **agent-updater** - Updates existing agent instructions (requires explicit user input)
+- [x] **agent-updater** - Updates existing agent instructions (requires explicit user input)
 
 ---
 
@@ -67,12 +64,12 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 
 | Category | Completed | Planned | Total |
 |----------|-----------|---------|-------|
-| GitHub (Blue) | 4 | 1 | 5 |
-| Documentation (Yellow) | 3 | 1 | 4 |
+| GitHub (Blue) | 5 | 0 | 5 |
+| Documentation (Yellow) | 4 | 0 | 4 |
 | Code (Red) | 6 | 0 | 6 |
-| Testing (Green) | 0 | 3 | 3 |
-| dotClaude (Pink) | 2 | 1 | 3 |
-| **Total** | **15** | **6** | **21** |
+| Testing (Green) | 3 | 0 | 3 |
+| dotClaude (Pink) | 3 | 0 | 3 |
+| **Total** | **21** | **0** | **21** |
 
 ---
 
