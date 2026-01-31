@@ -57,6 +57,7 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 - [x] **dotclaude-updater** - Updates local installation from GitHub
 
 - [x] **agent-updater** - Updates existing agent instructions (requires explicit user input)
+- [x] **agent-review-agent** - Reviews agent instructions for structural correctness and format consistency
 
 ---
 
@@ -68,8 +69,8 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 | Documentation (Yellow) | 4 | 0 | 4 |
 | Code (Red) | 6 | 0 | 6 |
 | Testing (Green) | 3 | 0 | 3 |
-| dotClaude (Pink) | 3 | 0 | 3 |
-| **Total** | **21** | **0** | **21** |
+| dotClaude (Pink) | 4 | 0 | 4 |
+| **Total** | **22** | **0** | **22** |
 
 ---
 

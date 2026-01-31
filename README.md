@@ -81,6 +81,7 @@ cd dotClaude
 | **agent-creator** | dotClaude | Create new custom agents |
 | **dotclaude-updater** | dotClaude | Update dotClaude from GitHub |
 | **agent-updater** | dotClaude | Update existing agent instructions |
+| **agent-review-agent** | dotClaude | Review agent instructions for quality |
 
 ## Usage Examples
 

@@ -41,6 +41,7 @@ Before responding to tasks, check if a specialized agent exists that matches the
 - `agent-creator` - Create new agents (ONLY when user explicitly requests)
 - `dotclaude-updater` - Update and verify dotClaude from GitHub
 - `agent-updater` - Update existing agent instructions (ONLY when user explicitly requests)
+- `agent-review-agent` - Review agent instruction files for quality and consistency
 
 ### Agent Recommendation Rules
 
@@ -94,6 +95,7 @@ Would you like to use the [agent-name] agent? (y/n)
 | "integration tests", "test workflow" | integration-test-agent | `claude --agent integration-test-agent` |
 | "update agent", "modify agent" | agent-updater | `claude --agent agent-updater` |
 | "update dotClaude" | dotclaude-updater | `claude --agent dotclaude-updater` |
+| "review agent", "check agent quality" | agent-review-agent | `claude --agent agent-review-agent` |
 
 ### Special Rules
 
