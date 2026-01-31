@@ -24,6 +24,11 @@ Before responding to tasks, check if a specialized agent exists that matches the
 
 **Code Quality:**
 - `code-cleanup-agent` - Find redundant/duplicate code for deletion
+- `code-review-agent` - Review code for bugs and best practices
+- `code-linting-agent` - Set up and configure linting tools
+- `dependency-agent` - Validate dependencies across files
+- `python-agent` - Python-specific code generation
+- `terraform-agent` - Terraform infrastructure code generation
 
 **Infrastructure:**
 - `agent-creator` - Create new agents (ONLY when user explicitly requests)
@@ -69,6 +74,11 @@ Would you like to use the [agent-name] agent? (y/n)
 | "create tag", "version release" | git-tags-agent | `claude --agent git-tags-agent` |
 | "create issue", "bug report" | git-issues-agent | `claude --agent git-issues-agent` |
 | "find duplicate code" | code-cleanup-agent | `claude --agent code-cleanup-agent` |
+| "review code", "check for bugs" | code-review-agent | `claude --agent code-review-agent` |
+| "set up linting", "configure eslint" | code-linting-agent | `claude --agent code-linting-agent` |
+| "check dependencies", "unused packages" | dependency-agent | `claude --agent dependency-agent` |
+| "write python code", "python function" | python-agent | `claude --agent python-agent` |
+| "terraform module", "infrastructure code" | terraform-agent | `claude --agent terraform-agent` |
 | "update dotClaude" | dotclaude-updater | `claude --agent dotclaude-updater` |
 
 ### Special Rules
@@ -135,6 +145,17 @@ Which would you prefer?
 Moving to [agent-2] for [next task]...
 Continue? (y/n/skip)
 ```
+
+### Git Workflow Rules
+
+**Before making code changes, always:**
+1. Pull the latest from `main`: `git pull origin main`
+2. Create a new feature branch: `git checkout -b feature/description`
+3. Make changes on the feature branch
+4. Commit and push the branch
+5. Create a PR to merge back into `main`
+
+**Never commit directly to `main`.** Always use feature branches and PRs.
 
 ### Discovery
 Check available agents: `ls ~/.claude/agents/`

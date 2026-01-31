@@ -35,13 +35,11 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 
 ### Completed
 - [x] **code-cleanup-agent** - Identifies redundant, duplicate, and dead code
-
-### Planned
-- [ ] **code-review-agent** - Reviews code for bugs and best practices
-- [ ] **code-linting-agent** - Runs and configures lint hooks
-- [ ] **dependency-agent** - Validates dependencies across files
-- [ ] **python-agent** - Python-specific code generation
-- [ ] **terraform-agent** - Terraform infrastructure code generation
+- [x] **code-review-agent** - Reviews code for bugs and best practices
+- [x] **code-linting-agent** - Runs and configures lint hooks
+- [x] **dependency-agent** - Validates dependencies across files
+- [x] **python-agent** - Python-specific code generation
+- [x] **terraform-agent** - Terraform infrastructure code generation
 
 ---
 
@@ -71,11 +69,11 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 |----------|-----------|---------|-------|
 | GitHub (Blue) | 4 | 1 | 5 |
 | Documentation (Yellow) | 3 | 1 | 4 |
-| Code (Red) | 1 | 5 | 6 |
+| Code (Red) | 6 | 0 | 6 |
 | Testing (Green) | 0 | 3 | 3 |
 | dotClaude (Pink) | 2 | 1 | 3 |
-| **Total** | **10** | **11** | **21** |
+| **Total** | **15** | **6** | **21** |
 
 ---
 
-*Last updated: 2026-01-19*
+*Last updated: 2026-01-31*
