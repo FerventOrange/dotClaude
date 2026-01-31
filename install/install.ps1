@@ -106,6 +106,39 @@ function Install-ClaudeCode {
     Write-Success "Claude Code installed"
 }
 
+# Check if GitHub CLI is installed
+function Test-GhInstalled {
+    try {
+        $null = Get-Command gh -ErrorAction Stop
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+# Install GitHub CLI
+function Install-GhCli {
+    Write-Host "Installing GitHub CLI..." -ForegroundColor Yellow
+
+    try {
+        $null = Get-Command winget -ErrorAction Stop
+        Write-Host "Using winget to install GitHub CLI..."
+        winget install GitHub.cli --accept-source-agreements --accept-package-agreements
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warn "winget install returned non-zero exit code"
+        }
+        # Add to session PATH
+        $ghPath = "C:\Program Files\GitHub CLI"
+        if (Test-Path $ghPath) {
+            Add-SessionPath $ghPath
+        }
+    } catch {
+        Write-Warn "winget not found. Install GitHub CLI manually:"
+        Write-Host "  https://github.com/cli/cli#installation"
+        Write-Host "  Or: winget install GitHub.cli"
+    }
+}
+
 # Configure agent awareness
 function Set-AgentAwareness {
     Write-Host "Configuring agent awareness..." -ForegroundColor Yellow
@@ -213,6 +246,18 @@ function Test-Installation {
         Write-Err "Claude Code not found"
     }
 
+    # Check GitHub CLI
+    if (Test-GhInstalled) {
+        try {
+            $ghVersion = & gh --version 2>$null | Select-Object -First 1
+            Write-Success "GitHub CLI installed: $ghVersion"
+        } catch {
+            Write-Success "GitHub CLI installed"
+        }
+    } else {
+        Write-Warn "GitHub CLI not found (optional, needed for PR workflows)"
+    }
+
     # Check custom instructions
     if (Test-Path $CustomInstructionsFile) {
         Write-Success "Custom instructions: $CustomInstructionsFile"
@@ -259,17 +304,31 @@ function Main {
     }
     Write-Host ""
 
-    # Step 2: Configure agent awareness
-    Write-Step "Step 2" "Agent Awareness Configuration"
+    # Step 2: Check/Install GitHub CLI
+    Write-Step "Step 2" "GitHub CLI"
+    if (Test-GhInstalled) {
+        try {
+            $ghVersion = & gh --version 2>$null | Select-Object -First 1
+            Write-Success "GitHub CLI already installed ($ghVersion)"
+        } catch {
+            Write-Success "GitHub CLI already installed"
+        }
+    } else {
+        Install-GhCli
+    }
+    Write-Host ""
+
+    # Step 3: Configure agent awareness
+    Write-Step "Step 3" "Agent Awareness Configuration"
     Set-AgentAwareness
     Write-Host ""
 
-    # Step 3: Install agents
-    Write-Step "Step 3" "Install Agents"
+    # Step 4: Install agents
+    Write-Step "Step 4" "Install Agents"
     Install-Agents
     Write-Host ""
 
-    # Step 4: Verify
+    # Step 5: Verify
     Test-Installation
 
     Write-Header "Installation Complete!"

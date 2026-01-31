@@ -27,6 +27,10 @@ Before installing dotClaude, ensure you have:
 3. **Git** (for cloning and agent operations)
    - Check: `git --version`
 
+4. **GitHub CLI** (for PR workflows, installed automatically by the installer)
+   - Check: `gh --version`
+   - Install: `winget install GitHub.cli` or visit [cli.github.com](https://cli.github.com/)
+
 ## Installation
 
 ### Linux/macOS
