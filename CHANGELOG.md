@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **sql-migration** - SQL migration file generation
   - **sql-query** - SQL query generation
   - **sql-schema** - SQL schema design
+- **gitops-agent** - GitHub org/repo configuration management via `gh` CLI (repository settings, branch protection rules, team permissions, webhooks, labels, issue/PR templates, CODEOWNERS, org-wide policies, audit/drift detection, and batch operations)
 - Agent retry rule to prevent root-level fallback when subagents fail (PR #10)
 - Git command enforcement hooks to install scripts (PR #5, #11)
 - Hook to block `gh pr edit` title/body modifications outside pr-agent
