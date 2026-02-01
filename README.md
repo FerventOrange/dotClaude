@@ -1,6 +1,6 @@
 # dotClaude
 
-A curated collection of 41 specialized AI agents for Claude Code CLI. This repository provides ready-to-use agents that extend Claude Code's capabilities across the full development lifecycle -- from frontend scaffolding and backend API design to database management, CI/CD pipelines, and documentation.
+A curated collection of 42 specialized AI agents for Claude Code CLI. This repository provides ready-to-use agents that extend Claude Code's capabilities across the full development lifecycle -- from frontend scaffolding and backend API design to database management, CI/CD pipelines, and documentation.
 
 ## Why dotClaude?
 
@@ -56,7 +56,7 @@ cd dotClaude
 1. Installs Claude Code via npm (if not already present)
 2. Installs GitHub CLI via the system package manager (if not already present)
 3. Copies custom instructions to `~/.claude/CLAUDE.md` for agent awareness
-4. Copies all 41 agents to `~/.claude/agents/`
+4. Copies all 42 agents to `~/.claude/agents/`
 5. Installs a PreToolUse hook (`block-git-commands.js`) that intercepts direct git commit, push, tag, merge, and rebase commands and redirects them to the appropriate agent
 6. Merges the hook configuration into `~/.claude/settings.json`
 
@@ -130,13 +130,14 @@ cd dotClaude
 | **unit-test-agent** | Generate unit tests for functions and classes |
 | **integration-test-agent** | Generate integration tests |
 
-### Infrastructure (8 agents)
+### Infrastructure (9 agents)
 
 | Agent | Purpose |
 |-------|---------|
 | **docker-agent** | Generate Dockerfiles and docker-compose configs |
 | **env-config-agent** | Manage environment files, secrets templates, and config across environments |
 | **cicd-agent** | Generate CI/CD pipeline configs (GitHub Actions, GitLab CI, and others) |
+| **gitops-agent** | Manage GitHub org/repo settings via gh CLI (branch protection, team permissions, webhooks, labels, templates, CODEOWNERS, drift detection) |
 | **deployment-agent** | Generate deploy scripts and hosting configs (Vercel, AWS, Fly.io, and others) |
 | **agent-creator** | Create new custom agents |
 | **dotclaude-updater** | Update dotClaude from GitHub |
