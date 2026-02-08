@@ -18,8 +18,6 @@ DOTCLAUDE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CLAUDE_CONFIG_DIR="$HOME/.claude"
 CUSTOM_INSTRUCTIONS_FILE="$CLAUDE_CONFIG_DIR/CLAUDE.md"
 AGENTS_INSTALL_DIR="$CLAUDE_CONFIG_DIR/agents"
-HOOKS_INSTALL_DIR="$CLAUDE_CONFIG_DIR/hooks"
-SETTINGS_FILE="$CLAUDE_CONFIG_DIR/settings.json"
 
 echo -e "${BLUE}================================================${NC}"
 echo -e "${BLUE}       dotClaude Installation Script${NC}"
@@ -219,61 +217,6 @@ install_agents() {
     echo -e "${GREEN}[OK] $installed_count agent(s) installed${NC}"
 }
 
-# Install hooks
-install_hooks() {
-    echo -e "${YELLOW}Installing hooks...${NC}"
-
-    # Create hooks directory
-    mkdir -p "$HOOKS_INSTALL_DIR"
-
-    # Copy hook script
-    if [ -f "$DOTCLAUDE_DIR/install/hooks/block-git-commands.js" ]; then
-        cp "$DOTCLAUDE_DIR/install/hooks/block-git-commands.js" "$HOOKS_INSTALL_DIR/block-git-commands.js"
-        echo -e "${GREEN}[OK] Hook script installed${NC}"
-    else
-        echo -e "${RED}Warning: block-git-commands.js not found in install/hooks directory.${NC}"
-        return
-    fi
-
-    # Merge hooks into settings.json using inline Node.js (avoids jq dependency)
-    HOOKS_TEMPLATE="$DOTCLAUDE_DIR/install/hooks/settings-hooks.json"
-    if [ ! -f "$HOOKS_TEMPLATE" ]; then
-        echo -e "${RED}Warning: settings-hooks.json not found in install/hooks directory.${NC}"
-        return
-    fi
-
-    node -e "
-const fs = require('fs');
-const templatePath = process.argv[1];
-const settingsPath = process.argv[2];
-
-const template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
-const newEntry = template.hooks.PreToolUse[0];
-
-let settings = {};
-if (fs.existsSync(settingsPath)) {
-    try { settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8')); } catch {}
-}
-
-if (!settings.hooks) settings.hooks = {};
-if (!settings.hooks.PreToolUse) settings.hooks.PreToolUse = [];
-
-// Check if this hook already exists (same matcher + command)
-const hookCmd = newEntry.hooks[0].command;
-const exists = settings.hooks.PreToolUse.some(entry =>
-    entry.matcher === newEntry.matcher &&
-    entry.hooks && entry.hooks.some(h => h.command === hookCmd)
-);
-
-if (!exists) {
-    settings.hooks.PreToolUse.push(newEntry);
-}
-
-fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
-" "$HOOKS_TEMPLATE" "$SETTINGS_FILE"
-
-    echo -e "${GREEN}[OK] Hooks configuration merged into settings.json${NC}"
-}
 
 # Verify installation
 verify_installation() {
@@ -313,25 +256,6 @@ verify_installation() {
         echo -e "${GREEN}[OK]${NC} Agents installed: $AGENT_COUNT"
     else
         echo -e "${RED}[X]${NC} Agents directory not found"
-    fi
-
-    # Check hooks
-    if [ -f "$HOOKS_INSTALL_DIR/block-git-commands.js" ]; then
-        echo -e "${GREEN}[OK]${NC} Hook script: $HOOKS_INSTALL_DIR/block-git-commands.js"
-    else
-        echo -e "${RED}[X]${NC} Hook script not found"
-    fi
-
-    if [ -f "$SETTINGS_FILE" ] && node -e "
-const s = JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));
-const ok = s.hooks && s.hooks.PreToolUse && s.hooks.PreToolUse.some(e =>
-    e.matcher === 'Bash' && e.hooks && e.hooks.some(h => h.command.includes('block-git-commands'))
-);
-process.exit(ok ? 0 : 1);
-" "$SETTINGS_FILE" 2>/dev/null; then
-        echo -e "${GREEN}[OK]${NC} Hooks configured in settings.json"
-    else
-        echo -e "${RED}[X]${NC} Hooks not configured in settings.json"
     fi
 
     # List agents
@@ -381,12 +305,7 @@ main() {
     install_agents
     echo ""
 
-    # Step 5: Install hooks
-    echo -e "${BLUE}Step 5: Install Hooks${NC}"
-    install_hooks
-    echo ""
-
-    # Step 6: Verify
+    # Step 5: Verify
     verify_installation
 
     echo ""
@@ -397,7 +316,6 @@ main() {
     echo "Installed to:"
     echo "  - Custom instructions: $CUSTOM_INSTRUCTIONS_FILE"
     echo "  - Agents directory: $AGENTS_INSTALL_DIR"
-    echo "  - Hooks directory: $HOOKS_INSTALL_DIR"
     echo ""
     echo "Next steps:"
     echo "  1. Start Claude Code: claude"

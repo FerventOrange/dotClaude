@@ -18,3 +18,4 @@
 - Never commit directly to `main`. Always use feature branches and PRs.
 - If the current work doesn't fit the current branch's scope, suggest creating a new branch first.
 - Always use the appropriate git agent (git-commit-agent, git-pr-agent, git-tags-agent, etc.) for git operations instead of running git commands directly.
+- NEVER run `git commit`, `git push`, or `git tag` from root — not even as a fallback. If a git agent fails, retry the agent or ask the user to run the command manually. Do not attempt the git command inline.
