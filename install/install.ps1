@@ -1,10 +1,13 @@
 # dotClaude Install Script for Windows
 # Installs Claude Code (if needed) and configures agent awareness
 #
-# Usage: .\install\install.ps1 [-SkipClaudeInstall]
+# Usage: .\install\install.ps1 [-SkipClaudeInstall] [-InstallLevel user|project|both] [-ProjectPath C:\path\to\project]
 
 param(
-    [switch]$SkipClaudeInstall
+    [switch]$SkipClaudeInstall,
+    [ValidateSet("user", "project", "both")]
+    [string]$InstallLevel = "",
+    [string]$ProjectPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -139,9 +142,59 @@ function Install-GhCli {
     }
 }
 
-# Configure agent awareness
-function Set-AgentAwareness {
-    Write-Host "Configuring agent awareness..." -ForegroundColor Yellow
+# Prompt for installation level
+function Get-InstallLevel {
+    if (-not [string]::IsNullOrWhiteSpace($script:InstallLevel)) {
+        return
+    }
+
+    Write-Host "Select installation level:" -ForegroundColor Blue
+    Write-Host "  1) User-level only    (~/.claude/CLAUDE.md + ~/.claude/agents/)"
+    Write-Host "  2) Project-level only (CLAUDE.md in project root + .gitignore entry)"
+    Write-Host "  3) Both               (user-level + project-level)"
+    Write-Host ""
+    $choice = Read-Host "Choice [1/2/3] (default: 1)"
+
+    switch ($choice) {
+        "2" { $script:InstallLevel = "project" }
+        "3" { $script:InstallLevel = "both" }
+        default { $script:InstallLevel = "user" }
+    }
+}
+
+# Prompt for project path and validate
+function Get-ProjectPath {
+    if ([string]::IsNullOrWhiteSpace($script:ProjectPath)) {
+        $script:ProjectPath = Read-Host "Enter project root path"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($script:ProjectPath)) {
+        Write-Err "No path provided."
+        exit 1
+    }
+
+    # Resolve to absolute path
+    $script:ProjectPath = (Resolve-Path $script:ProjectPath -ErrorAction Stop).Path
+
+    if (-not (Test-Path $script:ProjectPath -PathType Container)) {
+        Write-Err "Directory does not exist: $script:ProjectPath"
+        exit 1
+    }
+
+    # Validate it's a git repo
+    $gitDir = Join-Path $script:ProjectPath ".git"
+    if (-not (Test-Path $gitDir)) {
+        Write-Err "Not a git repository: $script:ProjectPath"
+        Write-Host "    No .git directory found. Project-level install requires a git repository."
+        exit 1
+    }
+
+    Write-Success "Valid git repository: $script:ProjectPath"
+}
+
+# Configure agent awareness at user level
+function Set-AgentAwarenessUser {
+    Write-Host "Configuring user-level agent awareness..." -ForegroundColor Yellow
 
     # Create config directory
     if (-not (Test-Path $ClaudeConfigDir)) {
@@ -150,7 +203,7 @@ function Set-AgentAwareness {
 
     # Check for existing instructions
     if (Test-Path $CustomInstructionsFile) {
-        Write-Warn "Existing custom instructions found."
+        Write-Warn "Existing custom instructions found at $CustomInstructionsFile"
         $overwrite = Read-Host "Overwrite? (y/n)"
         if ($overwrite -ne "y") {
             Write-Host "Keeping existing instructions."
@@ -167,9 +220,67 @@ function Set-AgentAwareness {
     $sourceFile = Join-Path $DotClaudeDir "install\custom-instructions.md"
     if (Test-Path $sourceFile) {
         Copy-Item $sourceFile $CustomInstructionsFile -Force
-        Write-Success "Custom instructions installed"
+        Write-Success "Custom instructions installed to $CustomInstructionsFile"
     } else {
         Write-Warn "custom-instructions.md not found in install directory"
+    }
+}
+
+# Configure agent awareness at project level
+function Set-AgentAwarenessProject {
+    Write-Host "Configuring project-level agent awareness..." -ForegroundColor Yellow
+
+    $projectClaudeMd = Join-Path $script:ProjectPath "CLAUDE.md"
+
+    # Check if CLAUDE.md already exists in project
+    if (Test-Path $projectClaudeMd) {
+        Write-Warn "Existing CLAUDE.md found at $projectClaudeMd"
+        $overwrite = Read-Host "Overwrite? (y/n)"
+        if ($overwrite -ne "y") {
+            Write-Host "Keeping existing project CLAUDE.md."
+            # Still update .gitignore
+            Update-Gitignore
+            return
+        }
+        # Backup existing
+        $timestamp = Get-Date -Format "yyyyMMddHHmmss"
+        $backupFile = "$projectClaudeMd.backup.$timestamp"
+        Copy-Item $projectClaudeMd $backupFile
+        Write-Host "Backup created: $backupFile"
+    }
+
+    # Copy custom instructions to project root
+    $sourceFile = Join-Path $DotClaudeDir "install\custom-instructions.md"
+    if (Test-Path $sourceFile) {
+        Copy-Item $sourceFile $projectClaudeMd -Force
+        Write-Success "Custom instructions installed to $projectClaudeMd"
+    } else {
+        Write-Warn "custom-instructions.md not found in install directory"
+    }
+
+    # Update .gitignore
+    Update-Gitignore
+}
+
+# Add CLAUDE.md to .gitignore
+function Update-Gitignore {
+    $gitignoreFile = Join-Path $script:ProjectPath ".gitignore"
+    $entry = "CLAUDE.md"
+
+    if (Test-Path $gitignoreFile) {
+        $content = Get-Content $gitignoreFile -Raw -ErrorAction SilentlyContinue
+        if ($content -and ($content -split "`n" | ForEach-Object { $_.Trim() }) -contains $entry) {
+            Write-Success "CLAUDE.md already in .gitignore"
+            return
+        }
+        # Append entry
+        Add-Content -Path $gitignoreFile -Value "`n# dotClaude - project-level Claude Code instructions"
+        Add-Content -Path $gitignoreFile -Value $entry
+        Write-Success "Added CLAUDE.md to existing .gitignore"
+    } else {
+        # Create .gitignore with entry
+        Set-Content -Path $gitignoreFile -Value "# dotClaude - project-level Claude Code instructions`n$entry"
+        Write-Success "Created .gitignore with CLAUDE.md entry"
     }
 }
 
@@ -258,11 +369,29 @@ function Test-Installation {
         Write-Warn "GitHub CLI not found (optional, needed for PR workflows)"
     }
 
-    # Check custom instructions
-    if (Test-Path $CustomInstructionsFile) {
-        Write-Success "Custom instructions: $CustomInstructionsFile"
-    } else {
-        Write-Err "Custom instructions not found"
+    # Check user-level custom instructions
+    if ($script:InstallLevel -eq "user" -or $script:InstallLevel -eq "both") {
+        if (Test-Path $CustomInstructionsFile) {
+            Write-Success "User-level instructions: $CustomInstructionsFile"
+        } else {
+            Write-Err "User-level instructions not found"
+        }
+    }
+
+    # Check project-level custom instructions
+    if ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") {
+        $projectClaudeMd = Join-Path $script:ProjectPath "CLAUDE.md"
+        if (Test-Path $projectClaudeMd) {
+            Write-Success "Project-level instructions: $projectClaudeMd"
+        } else {
+            Write-Err "Project-level instructions not found"
+        }
+        $gitignoreFile = Join-Path $script:ProjectPath ".gitignore"
+        if ((Test-Path $gitignoreFile) -and ((Get-Content $gitignoreFile -Raw) -match "CLAUDE\.md")) {
+            Write-Success "CLAUDE.md in .gitignore"
+        } else {
+            Write-Warn "CLAUDE.md not in .gitignore"
+        }
     }
 
     # Check installed agents directory
@@ -318,23 +447,45 @@ function Main {
     }
     Write-Host ""
 
-    # Step 3: Configure agent awareness
-    Write-Step "Step 3" "Agent Awareness Configuration"
-    Set-AgentAwareness
+    # Step 3: Select installation level
+    Write-Step "Step 3" "Installation Level"
+    Get-InstallLevel
+    Write-Success "Install level: $script:InstallLevel"
+
+    # If project or both, get and validate project path
+    if ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") {
+        Get-ProjectPath
+    }
     Write-Host ""
 
-    # Step 4: Install agents
-    Write-Step "Step 4" "Install Agents"
+    # Step 4: Configure agent awareness
+    Write-Step "Step 4" "Agent Awareness Configuration"
+    if ($script:InstallLevel -eq "user" -or $script:InstallLevel -eq "both") {
+        Set-AgentAwarenessUser
+    }
+    if ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") {
+        Set-AgentAwarenessProject
+    }
+    Write-Host ""
+
+    # Step 5: Install agents (always user-level — agents must be in ~/.claude/agents/)
+    Write-Step "Step 5" "Install Agents"
     Install-Agents
     Write-Host ""
 
-    # Step 5: Verify
+    # Step 6: Verify
     Test-Installation
 
     Write-Header "Installation Complete!"
     Write-Host ""
     Write-Host "Installed to:"
-    Write-Host "  - Custom instructions: $CustomInstructionsFile"
+    if ($script:InstallLevel -eq "user" -or $script:InstallLevel -eq "both") {
+        Write-Host "  - User instructions: $CustomInstructionsFile"
+    }
+    if ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") {
+        Write-Host "  - Project instructions: $(Join-Path $script:ProjectPath 'CLAUDE.md')"
+        Write-Host "  - .gitignore updated: $(Join-Path $script:ProjectPath '.gitignore')"
+    }
     Write-Host "  - Agents directory: $AgentsInstallDir"
     Write-Host ""
     Write-Host "Next steps:"
