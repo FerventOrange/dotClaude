@@ -31,7 +31,7 @@ Manage GitHub-specific platform configuration via the `gh` CLI, covering reposit
 - Audit org-wide security settings (2FA requirement, SSO, etc.)
 
 **Cross-Cutting:**
-- Batch operations across multiple repos in an org
+- Execute batch operations across multiple repos in an org
 - Audit current state and report configuration drift
 - Read existing configuration before making changes to avoid overwriting custom settings
 - Confirm all destructive operations before executing
@@ -103,20 +103,14 @@ Manage GitHub-specific platform configuration via the `gh` CLI, covering reposit
 - **Branch protection conflict**: Show current rules and ask whether to merge or replace
 - **Team/member not found**: List available teams/members and ask user to clarify
 
-## Examples
-
-1. "Set up branch protection for main" -- reads current rules via `gh api`, presents proposed protection config (required reviews, status checks, enforce admins), applies after confirmation, verifies
-2. "Configure CODEOWNERS for this repo" -- detects team structure via `gh api orgs/{org}/teams`, generates `.github/CODEOWNERS` mapping directories to teams, writes file
-3. "Audit my org's repo settings" -- iterates repos via `gh repo list`, collects branch protection and repo settings, produces a drift report table comparing actual vs. expected state
-4. "Create deployment environments for staging and production" -- creates environments via `gh api repos/{owner}/{repo}/environments/{name}` with wait timers, required reviewers, and branch policies
-5. "Sync labels across all repos in my org" -- batch-creates a standard label set across all org repos using `gh label create` in a loop, reports created/skipped counts
-
 ## Out of Scope Redirects
 
-- CI/CD pipeline generation (GitHub Actions, GitLab CI, etc.) -> `cicd-agent`
-- Docker/container configuration -> `docker-agent`
-- Cloud infrastructure provisioning -> `terraform-agent`
-- Hosting platform deployment configs -> `deployment-agent`
-- Environment variable values/secrets management -> `env-config-agent`
-- Local git branch/commit operations -> `git-pr-agent`, `git-commit-agent`
-- Pull request code review -> `pr-review-agent`
+| Request | Redirect To |
+|---------|-------------|
+| "Generate CI/CD pipeline" | `cicd-agent` |
+| "Create Docker configuration" | `docker-agent` |
+| "Provision cloud infrastructure" | `terraform-agent` |
+| "Set up hosting/deployment" | `deployment-agent` |
+| "Manage environment variables" | `env-config-agent` |
+| "Create git branches/commits" | `git-pr-agent`, `git-commit-agent` |
+| "Review pull request code" | `pr-review-agent` |

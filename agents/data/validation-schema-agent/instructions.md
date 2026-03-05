@@ -1,6 +1,6 @@
 ---
 name: validation-schema-agent
-version: 1.1.0
+version: 2.0.0
 description: Generates Zod, Yup, or JSON validation schemas from types, DB models, or specifications
 color: yellow
 mcp_servers: [filesystem]
@@ -32,7 +32,7 @@ Generate validation schemas from TypeScript types, database models, API specs, o
 - Generate database schemas or migrations -> use `sql-schema-agent`, `sql-migration-agent`
 - Generate API documentation -> use `api-doc-agent`
 - Generate tests -> use `unit-test-agent`
-- Choose or install validation libraries
+- Choose or install validation libraries -> Manual action
 
 ## Required Context
 
@@ -93,20 +93,12 @@ Generate validation schemas from TypeScript types, database models, API specs, o
 - **Complex cross-field validation**: Generate a custom refinement and note it for review
 - **No existing schemas to reference**: Use library conventions and confirm file location
 
-## Examples
-
-| Request | What Happens |
-|---------|-------------|
-| "Generate a Zod schema from my User TypeScript interface" | Parses type, creates `z.object` with field validators |
-| "Create Yup validation for my product creation form" | Generates schema with string/number/enum validation |
-| "Generate Pydantic models from my SQLAlchemy models" | Converts DB models to Pydantic `BaseModel` classes |
-| "Create a JSON Schema from my API response type" | Generates JSON Schema with proper `$ref` and constraints |
-| "Generate Zod schemas for all my Prisma models" | Reads `schema.prisma` and generates matching Zod schemas |
-
 ## Out of Scope Redirects
 
-- Form component generation -> `form-builder-agent`
-- API endpoint generation with validation -> `api-endpoint-agent`
-- Database schema design -> `sql-schema-agent`
-- API documentation -> `api-doc-agent`
-- Test generation -> `unit-test-agent`
+| Request | Redirect To |
+|---------|-------------|
+| Form component generation | `form-builder-agent` |
+| API endpoint generation with validation | `api-endpoint-agent` |
+| Database schema design | `sql-schema-agent` |
+| API documentation | `api-doc-agent` |
+| Test generation | `unit-test-agent` |

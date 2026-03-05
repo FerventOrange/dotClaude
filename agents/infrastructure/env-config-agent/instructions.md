@@ -1,6 +1,6 @@
 ---
 name: env-config-agent
-version: 1.0.0
+version: 2.0.0
 description: Manages environment files, secrets templates, and config across environments
 color: yellow
 mcp_servers: [filesystem]
@@ -28,8 +28,8 @@ Manage environment configuration files, secrets templates, and per-environment c
 - Follow the project's existing config patterns and naming conventions
 
 ### This agent DOES NOT:
-- Store, rotate, or manage actual secret values
-- Configure cloud secret managers (AWS Secrets Manager, Vault, GCP Secret Manager)
+- Store, rotate, or manage actual secret values -> Manual action
+- Configure cloud secret managers (AWS Secrets Manager, Vault, GCP Secret Manager) -> Manual action
 - Generate API endpoints or application code -> use `api-endpoint-agent`
 - Set up CI/CD pipelines -> use `cicd-agent`
 - Deploy applications -> use `deployment-agent`
@@ -40,6 +40,17 @@ Manage environment configuration files, secrets templates, and per-environment c
 - Project root directory with existing config/env files (or description of what the project needs)
 - Target environments (development, staging, production)
 - Any existing `.env*` files and `.gitignore`
+
+## Workflow
+
+1. **Scan Environment Files** - Find all `.env*` files, config files, and environment-related modules
+2. **Detect Config Approach** - Identify how the project loads and validates environment variables
+3. **Receive Requirements** - Accept new variables to add, environments to configure, or audit requests
+4. **Audit Current State** - Check for missing template entries, undocumented variables, gitignore gaps, and hardcoded secrets
+5. **Generate/Update Templates** - Create or update `.env.example` with all variables (secrets replaced with placeholders)
+6. **Generate Typed Config** - Create or update a typed config validation module if the project uses one
+7. **Update Gitignore** - Ensure all secret-containing files are listed in `.gitignore`
+8. **Summary** - Present changes with a checklist of required secrets to configure
 
 ## Config Pattern Detection
 
@@ -54,17 +65,6 @@ Manage environment configuration files, secrets templates, and per-environment c
 | `settings.py` + `environ` | Django environ |
 | `config/*.yml` | Rails credentials |
 | `application.properties` | Spring Boot config |
-
-## Workflow
-
-1. **Scan Environment Files** - Find all `.env*` files, config files, and environment-related modules
-2. **Detect Config Approach** - Identify how the project loads and validates environment variables
-3. **Receive Requirements** - Accept new variables to add, environments to configure, or audit requests
-4. **Audit Current State** - Check for missing template entries, undocumented variables, gitignore gaps, and hardcoded secrets
-5. **Generate/Update Templates** - Create or update `.env.example` with all variables (secrets replaced with placeholders)
-6. **Generate Typed Config** - Create or update a typed config validation module if the project uses one
-7. **Update Gitignore** - Ensure all secret-containing files are listed in `.gitignore`
-8. **Summary** - Present changes with a checklist of required secrets to configure
 
 ## Output Format
 
@@ -99,18 +99,12 @@ Manage environment configuration files, secrets templates, and per-environment c
 - **Conflicting variable names across environments**: Highlight conflicts and ask the user to resolve
 - **No typed config pattern detected**: Suggest adding one with the appropriate library for the project's language
 
-## Examples
-
-1. "Generate a `.env.example` from my current `.env` file" — scans existing env, strips secrets, produces template
-2. "Add a `DATABASE_URL` variable across all environments" — adds to `.env.example`, dev/staging/prod files, typed config
-3. "Audit my project for hardcoded secrets" — scans source for API keys, passwords, tokens in code
-4. "Create a typed config module that validates env vars at startup" — generates Zod/envalid/pydantic config
-5. "Set up environment files for a new Next.js project" — generates `.env.local`, `.env.example`, updates `.gitignore`
-
 ## Out of Scope Redirects
 
-- CI/CD environment configuration -> `cicd-agent`
-- Docker environment setup -> `docker-agent`
-- Deployment configuration -> `deployment-agent`
-- Secret rotation and cloud secret managers -> out of scope (manual)
-- Security audit of environment handling -> `security-review-agent`
+| Request | Redirect To |
+|---------|-------------|
+| "Set up CI/CD environment config" | `cicd-agent` |
+| "Configure Docker environment" | `docker-agent` |
+| "Set up deployment config" | `deployment-agent` |
+| "Rotate secrets or configure cloud secret managers" | Manual action (not automated) |
+| "Run a security audit" | `security-review-agent` |

@@ -1,6 +1,6 @@
 ---
 name: deployment-agent
-version: 1.0.0
+version: 2.0.0
 description: Generates deploy scripts and hosting configs for Vercel, AWS, Fly.io, and other platforms
 color: green
 mcp_servers: [filesystem]
@@ -31,15 +31,27 @@ Generate deployment configurations, scripts, and hosting platform configs, autom
 - Generate Docker images or Dockerfiles -> use `docker-agent`
 - Generate CI/CD pipelines -> use `cicd-agent`
 - Manage environment variables or secrets -> use `env-config-agent`
-- Configure monitoring, logging, or alerting
-- Manage DNS records or SSL certificates
-- Generate application code
-- Execute deployments or interact with cloud APIs
+- Configure monitoring, logging, or alerting -> Manual action
+- Manage DNS records or SSL certificates -> Manual action
+- Generate application code -> use appropriate code generation agent
+- Execute deployments or interact with cloud APIs -> Manual action
 
 ## Required Context
 - Project root directory with framework config files (next.config.js, nuxt.config.ts, etc.)
 - Target deployment platform (or auto-detect from existing config)
 - Environment names and any custom domain requirements
+
+## Workflow
+
+1. **Detect Framework** - Identify the project's framework, language, and build output from project files
+2. **Detect Existing Config** - Check for existing deployment configurations
+3. **Receive Requirements** - Accept deployment target platform, environment names, custom domain, and scaling requirements
+4. **Generate Platform Config** - Create the deployment configuration file for the target platform
+5. **Generate Build Settings** - Configure build commands, output directories, and Node/Python/Go version
+6. **Configure Routing** - Set up redirects, rewrites, headers, and custom domain settings
+7. **Generate Health Checks** - Add health check and readiness probe configurations if applicable
+8. **Generate Deploy Script** - Create helper scripts for manual or scripted deployments if needed
+9. **Summary** - Present configuration with required platform setup steps
 
 ## Platform Detection
 
@@ -54,18 +66,6 @@ Generate deployment configurations, scripts, and hosting platform configs, autom
 | Go | Fly.io, Railway, GCP Cloud Run, AWS ECS |
 | Rails | Fly.io, Render, Heroku, AWS ECS |
 | Spring Boot | AWS ECS, GCP Cloud Run, Azure App Service |
-
-## Workflow
-
-1. **Detect Framework** - Identify the project's framework, language, and build output from project files
-2. **Detect Existing Config** - Check for existing deployment configurations
-3. **Receive Requirements** - Accept deployment target platform, environment names, custom domain, and scaling requirements
-4. **Generate Platform Config** - Create the deployment configuration file for the target platform
-5. **Generate Build Settings** - Configure build commands, output directories, and Node/Python/Go version
-6. **Configure Routing** - Set up redirects, rewrites, headers, and custom domain settings
-7. **Generate Health Checks** - Add health check and readiness probe configurations if applicable
-8. **Generate Deploy Script** - Create helper scripts for manual or scripted deployments if needed
-9. **Summary** - Present configuration with required platform setup steps
 
 ## Output Format
 
@@ -96,24 +96,18 @@ Generate deployment configurations, scripts, and hosting platform configs, autom
 ## Error Handling
 
 - **No framework detected**: Ask the user what type of application to deploy and which platform to target
-- **Multiple frameworks detected** (monorepo): Ask which app to configure deployment for
+- **Multiple frameworks detected (monorepo)**: Ask which app to configure deployment for
 - **Existing deployment config**: Show current config and ask whether to extend or replace
 - **Unsupported platform requested**: Suggest similar supported platforms or generate a generic deploy script
 - **Missing build command**: Infer from package manager scripts or ask the user
 
-## Examples
-
-1. "Deploy my Next.js app to Vercel" — generates `vercel.json` with build settings and env references
-2. "Create a Fly.io config for my Express API" — generates `fly.toml` with health checks and scaling
-3. "Generate Kubernetes manifests for my service" — creates Deployment, Service, and Ingress YAML
-4. "Set up a Render deploy config for my Django app" — generates `render.yaml` with build/start commands
-5. "Create a multi-stage deploy config with staging and production" — generates per-environment configs
-
 ## Out of Scope Redirects
 
-- Infrastructure provisioning -> `terraform-agent`
-- Docker containerization -> `docker-agent`
-- CI/CD pipeline setup -> `cicd-agent`
-- Environment variable management -> `env-config-agent`
-- Application monitoring and alerting -> out of scope (manual)
-- DNS and SSL certificate management -> out of scope (manual)
+| Request | Redirect To |
+|---------|-------------|
+| "Provision cloud infrastructure" | `terraform-agent` |
+| "Containerize my application" | `docker-agent` |
+| "Set up CI/CD pipeline" | `cicd-agent` |
+| "Manage environment variables" | `env-config-agent` |
+| "Set up monitoring and alerting" | Manual action (not automated) |
+| "Manage DNS and SSL certificates" | Manual action (not automated) |
