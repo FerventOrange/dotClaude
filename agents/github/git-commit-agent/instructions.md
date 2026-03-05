@@ -110,4 +110,4 @@ This ensures commits are properly attributed to the repository owner rather than
 ## Out of Scope Redirects
 
 - Changelog generation → `changelog-agent`
-- README updates → `readme-agent`
+- README updates → `documentation-agent`

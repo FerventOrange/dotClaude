@@ -42,9 +42,9 @@ You have access to a library of focused, scoped agents in the `agents/` director
   - Usage: `claude --agent git-sync-agent`
 
 ### Documentation Agents
-- **readme-agent**: Generate or update README.md files
+- **documentation-agent**: Generate or update README.md files
   - Trigger: User asks to create/update README, project documentation, getting started guide
-  - Usage: `claude --agent readme-agent`
+  - Usage: `claude --agent documentation-agent`
 
 - **changelog-agent**: Generate or update CHANGELOG.md from git history
   - Trigger: User asks for changelog, release notes, version history
@@ -161,12 +161,12 @@ Before responding to documentation, git, code, testing, or infrastructure tasks:
 ```
 User: "Can you help me create a README for my project?"
 
-Claude: "I can help with that! We have a specialized readme-agent that's
+Claude: "I can help with that! We have a specialized documentation-agent that's
 optimized for this:
 
-Agent: readme-agent
+Agent: documentation-agent
 Purpose: Generates comprehensive README.md files by analyzing project structure
-Usage: claude --agent readme-agent
+Usage: claude --agent documentation-agent
 
 This agent will:
 - Detect your project type automatically
@@ -174,7 +174,7 @@ This agent will:
 - Include installation instructions
 - Add usage examples
 
-Would you like me to use the readme-agent? (y/n)"
+Would you like me to use the documentation-agent? (y/n)"
 ```
 
 ### Good - Asks Before Using
@@ -219,7 +219,7 @@ this task, so I'll assist directly.)"
 ```
 User: "Can you help me create a README?"
 
-Claude: [Immediately switches to readme-agent without asking]
+Claude: [Immediately switches to documentation-agent without asking]
 WRONG - Always ask user first
 ```
 
@@ -229,7 +229,7 @@ Quickly identify which category a request belongs to:
 
 | User Request Contains... | Likely Agent Category | Check These Agents |
 |-------------------------|----------------------|-------------------|
-| "README", "project docs", "getting started" | Documentation | readme-agent |
+| "README", "project docs", "getting started" | Documentation | documentation-agent |
 | "changelog", "release notes", "version history" | Documentation | changelog-agent |
 | "review docs", "check documentation" | Documentation | doc-review-agent |
 | "API docs", "endpoint documentation" | Documentation | api-doc-agent |
@@ -291,14 +291,14 @@ User: "I need to document my project"
 
 Claude: "I can help set up complete documentation:
 
-1. readme-agent - Create README.md
+1. documentation-agent - Create README.md
 2. changelog-agent - Generate CHANGELOG.md
 3. api-doc-agent - Generate API documentation
 4. doc-review-agent - Review quality
 
 Should I:
 a) Use all four agents in sequence
-b) Start with just README (readme-agent)
+b) Start with just README (documentation-agent)
 c) Help you directly
 
 What would you prefer?"
@@ -350,7 +350,7 @@ Create a `.claude/agents.json` in your project:
   "agent_awareness": true,
   "auto_recommend": true,
   "agents": {
-    "readme-agent": {
+    "documentation-agent": {
       "triggers": ["readme", "project documentation", "getting started"],
       "auto_suggest": true
     },
@@ -457,10 +457,10 @@ check_for_agent() {
 
     # Check for documentation requests
     if echo "$request" | grep -qi "readme\|project doc"; then
-        echo "Tip: Use 'claude --agent readme-agent' for README generation"
-        read -p "Use readme-agent? (y/n): " use_agent
+        echo "Tip: Use 'claude --agent documentation-agent' for README generation"
+        read -p "Use documentation-agent? (y/n): " use_agent
         if [ "$use_agent" = "y" ]; then
-            claude --agent readme-agent
+            claude --agent documentation-agent
             exit 0
         fi
     fi
@@ -576,7 +576,7 @@ fi
    claude
    > "Help me create a README"
 
-   # Should recommend readme-agent
+   # Should recommend documentation-agent
    ```
 
 4. **Verify Behavior:**
@@ -598,14 +598,14 @@ Claude: [Directly starts writing README]
 ### After (With Instructions)
 ```
 User: "Create a README"
-Claude: "I can help! We have a specialized readme-agent for this:
+Claude: "I can help! We have a specialized documentation-agent for this:
 
-The readme-agent will:
+The documentation-agent will:
 - Analyze your project structure
 - Detect dependencies automatically
 - Generate appropriate sections
 
-Use readme-agent? (y/n)"
+Use documentation-agent? (y/n)"
 ```
 
 ---
@@ -636,7 +636,7 @@ Last Updated: 2026-01-31
 - git-sync-agent
 
 ## Documentation (4 agents)
-- readme-agent
+- documentation-agent
 - changelog-agent
 - doc-review-agent
 - api-doc-agent

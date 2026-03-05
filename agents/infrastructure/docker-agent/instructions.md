@@ -192,4 +192,4 @@ node_modules
 - Code review of existing Dockerfiles -> `code-review-agent`
 - CI/CD pipeline configuration -> out of scope (no dedicated agent)
 - Dependency management -> `dependency-agent`
-- Documentation generation -> `readme-agent`
+- Documentation generation -> `documentation-agent`

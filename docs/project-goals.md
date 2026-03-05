@@ -109,7 +109,7 @@ dotClaude/
 │   │   ├── api-doc-agent/
 │   │   ├── changelog-agent/
 │   │   ├── doc-review-agent/
-│   │   └── readme-agent/
+│   │   └── documentation-agent/
 │   ├── github/                    # Git workflow agents (5)
 │   │   ├── git-commit-agent/
 │   │   ├── git-issues-agent/

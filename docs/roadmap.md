@@ -22,7 +22,7 @@ See also: [CHANGELOG](../CHANGELOG.md) | [Agent Guidelines](agent-guidelines.md)
 
 ### Completed
 - [x] **doc-review-agent** - Reviews documentation quality and provides feedback
-- [x] **readme-agent** - Generates and updates README.md files
+- [x] **documentation-agent** - Generates and updates README.md files
 - [x] **changelog-agent** - Generates CHANGELOG.md from git history
 
 - [x] **api-doc-agent** - Creates API documentation from code

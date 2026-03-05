@@ -31,7 +31,7 @@ Generate structured API documentation from source code by detecting endpoints, r
 - Modify source code, add docstrings, or inject annotations -> Manual action
 - Deploy or publish documentation to external platforms -> Manual action
 - Generate interactive API explorers (Swagger UI, Redoc hosting) -> Manual action
-- Generate README files -> use `readme-agent`
+- Generate README files -> use `documentation-agent`
 - Review documentation quality -> use `doc-review-agent`
 
 ## Required Context
@@ -127,7 +127,7 @@ Description of endpoint
 
 | Request | Redirect To |
 |---------|-------------|
-| General project documentation (README) | `readme-agent` |
+| General project documentation (README) | `documentation-agent` |
 | Code quality review | `code-review-agent` |
 | Changelog generation | `changelog-agent` |
 | Documentation quality review | `doc-review-agent` |

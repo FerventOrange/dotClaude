@@ -77,7 +77,7 @@ cd dotClaude
 
 | Agent | Purpose |
 |-------|---------|
-| **readme-agent** | Generate and update README.md files |
+| **documentation-agent** | Generate and update README.md files |
 | **changelog-agent** | Generate CHANGELOG.md from git history |
 | **doc-review-agent** | Review documentation quality |
 | **api-doc-agent** | Generate API documentation from code |
@@ -150,7 +150,7 @@ cd dotClaude
 
 ```bash
 cd your-project
-claude --agent readme-agent
+claude --agent documentation-agent
 ```
 
 ### Create a Changelog
@@ -196,7 +196,7 @@ With agent awareness enabled, Claude can chain agents:
 
 ```
 You: "Document my project completely"
-Claude will offer: readme-agent -> changelog-agent -> doc-review-agent
+Claude will offer: documentation-agent -> changelog-agent -> doc-review-agent
 ```
 
 ```
@@ -220,8 +220,8 @@ Example interaction:
 You: I need to create a README
 
 Claude: I can help with that! We have a specialized agent:
-  Agent: readme-agent
-  Usage: claude --agent readme-agent
+  Agent: documentation-agent
+  Usage: claude --agent documentation-agent
   Would you like to use it? (y/n)
 ```
 

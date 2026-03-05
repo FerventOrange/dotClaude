@@ -27,7 +27,7 @@ Generate and maintain CHANGELOG.md files by analyzing git commit history and org
 - Create git tags or releases -> use `git-tags-agent`
 - Write commit messages -> use `git-commit-agent`
 - Modify git history or commits -> Manual action
-- Generate README files -> use `readme-agent`
+- Generate README files -> use `documentation-agent`
 - Publish releases to GitHub/GitLab -> Manual action
 
 ## Required Context
@@ -84,7 +84,7 @@ Generate and maintain CHANGELOG.md files by analyzing git commit history and org
 | Request | Redirect To |
 |---------|-------------|
 | Commit message help | `git-commit-agent` |
-| README generation | `readme-agent` |
+| README generation | `documentation-agent` |
 | Documentation review | `doc-review-agent` |
 | Git tag creation | `git-tags-agent` |
 | Release publishing | Manual action |

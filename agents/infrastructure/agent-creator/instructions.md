@@ -139,7 +139,7 @@ mcp_servers: [list of required servers]
 |---|----------|-------|---------|
 | 1 | Code Generation | Generate specific types of code | component-generator, route-generator |
 | 2 | Code Analysis | Analyze code for specific issues | code-review, security-review, code-cleanup |
-| 3 | Documentation | Create specific documentation types | readme-agent, api-doc-agent, changelog-agent |
+| 3 | Documentation | Create specific documentation types | documentation-agent, api-doc-agent, changelog-agent |
 | 4 | Testing | Handle specific testing tasks | unit-test-agent, integration-test-agent |
 | 5 | Git Workflows | Specific git operations | git-commit-agent, git-pr-agent, git-tags-agent |
 | 6 | Refactoring | Specific refactoring patterns | code-cleanup-agent, code-linting-agent |

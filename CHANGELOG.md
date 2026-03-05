@@ -64,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Slimmed custom instructions to behavioral rules only, removing redundant agent lookup tables and recommendation templates
-- Expanded readme-agent scope to include general documentation updates
+- Expanded documentation-agent scope to include general documentation updates
 - Added Workflow sections to doc-review-agent and code-cleanup-agent
 - Added Out of Scope Redirects to dotclaude-updater
 - Added color field to agent-creator template for propagation
@@ -132,7 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **doc-review-agent** - Reviews documentation quality
   - **dotclaude-updater** - Updates dotClaude from GitHub
   - **git-commit-agent** - Suggests conventional commit messages
-  - **readme-agent** - Generates README.md files
+  - **documentation-agent** - Generates README.md files
 - Installation scripts for Windows (PowerShell) and Unix (Bash)
 - Agent awareness system with custom instructions template
 - Agent design guidelines documentation

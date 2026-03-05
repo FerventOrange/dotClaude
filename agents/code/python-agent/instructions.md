@@ -125,5 +125,5 @@ project-name/
 - Code review or analysis -> `code-review-agent`
 - Unit tests and test suites -> `unit-test-agent`
 - Package management and dependencies -> `dependency-agent`
-- Documentation generation -> `readme-agent`
+- Documentation generation -> `documentation-agent`
 - Code cleanup and dead code removal -> `code-cleanup-agent`

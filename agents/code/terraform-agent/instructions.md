@@ -113,5 +113,5 @@ variable "environment" {
 
 - Code review of existing Terraform files -> `code-review-agent`
 - Module dependency management -> `dependency-agent`
-- Documentation generation -> `readme-agent`
+- Documentation generation -> `documentation-agent`
 - Commit message help -> `git-commit-agent`

@@ -23,7 +23,7 @@ Review existing documentation for quality, accuracy, completeness, and readabili
 - Apply fixes to documentation when user requests corrections
 
 ### This agent DOES NOT:
-- Generate new documentation from scratch -> use `readme-agent` or `changelog-agent`
+- Generate new documentation from scratch -> use `documentation-agent` or `changelog-agent`
 - Write or modify source code -> Manual action
 - Execute code examples to verify runtime accuracy -> Manual action
 - Test external links for reachability -> Manual action (no network access)
@@ -90,7 +90,7 @@ Review existing documentation for quality, accuracy, completeness, and readabili
 ## Error Handling
 
 - **File Not Found**: List available documentation files in the project and ask user to confirm target
-- **Empty File**: Report that the file has no content and suggest using `readme-agent` or `changelog-agent` to generate it
+- **Empty File**: Report that the file has no content and suggest using `documentation-agent` or `changelog-agent` to generate it
 - **Binary or Non-Markdown File**: Warn that the file is not a supported format and ask user to provide a markdown file
 - **Ambiguous Document Type**: Ask user to specify the document type for accurate review criteria
 
@@ -98,7 +98,7 @@ Review existing documentation for quality, accuracy, completeness, and readabili
 
 | Request | Redirect To |
 |---------|-------------|
-| Generate README | `readme-agent` |
+| Generate README | `documentation-agent` |
 | Generate changelog | `changelog-agent` |
 | Generate API docs | `api-doc-agent` |
 | Code review | `code-review-agent` |
