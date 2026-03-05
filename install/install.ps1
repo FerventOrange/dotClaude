@@ -150,7 +150,7 @@ function Get-InstallLevel {
 
     Write-Host "Select installation level:" -ForegroundColor Blue
     Write-Host "  1) User-level only    (~/.claude/CLAUDE.md + ~/.claude/agents/)"
-    Write-Host "  2) Project-level only (CLAUDE.md in project root + .gitignore entry)"
+    Write-Host "  2) Project-level only (<project>/.claude/CLAUDE.md + .claude/agents/ + .gitignore)"
     Write-Host "  3) Both               (user-level + project-level)"
     Write-Host ""
     $choice = Read-Host "Choice [1/2/3] (default: 1)"
@@ -290,14 +290,18 @@ function Update-Gitignore {
     }
 }
 
-# Install agents to ~/.claude/agents (copy agent directories from category folders)
+# Install agents to a target directory (copy agent directories from category folders)
 function Install-Agents {
-    Write-Host "Installing agents..." -ForegroundColor Yellow
+    param(
+        [string]$TargetDir,
+        [string]$Label
+    )
+    Write-Host "Installing agents ($Label)..." -ForegroundColor Yellow
 
     # Create agents directory
-    if (-not (Test-Path $AgentsInstallDir)) {
-        New-Item -ItemType Directory -Path $AgentsInstallDir -Force | Out-Null
-        Write-Host "Created agents directory: $AgentsInstallDir"
+    if (-not (Test-Path $TargetDir)) {
+        New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+        Write-Host "Created agents directory: $TargetDir"
     }
 
     # Source agents directory
@@ -324,7 +328,7 @@ function Install-Agents {
 
         foreach ($agent in $agents) {
             $instructionsPath = Join-Path $agent.FullName "instructions.md"
-            $destAgentDir = Join-Path $AgentsInstallDir $agent.Name
+            $destAgentDir = Join-Path $TargetDir $agent.Name
 
             if (-not (Test-Path $instructionsPath)) {
                 continue
@@ -341,7 +345,7 @@ function Install-Agents {
     }
 
     if ($installedCount -gt 0) {
-        Write-Success "$installedCount agent(s) installed"
+        Write-Success "$installedCount agent(s) installed to $TargetDir"
     } else {
         Write-Success "All agents up to date"
     }
@@ -400,21 +404,33 @@ function Test-Installation {
         }
     }
 
-    # Check installed agents directory
-    if (Test-Path $AgentsInstallDir) {
-        $agentDirs = Get-ChildItem -Path $AgentsInstallDir -Directory -ErrorAction SilentlyContinue
-        $agentCount = ($agentDirs | Measure-Object).Count
-        Write-Success "Agents directory: $AgentsInstallDir"
-        Write-Success "Agents installed: $agentCount"
-    } else {
-        Write-Err "Agents directory not found"
+    # Check installed agents directory (per level)
+    if ($script:InstallLevel -eq "user" -or $script:InstallLevel -eq "both") {
+        if (Test-Path $AgentsInstallDir) {
+            $agentCount = (Get-ChildItem -Path $AgentsInstallDir -Directory -ErrorAction SilentlyContinue | Measure-Object).Count
+            Write-Success "User agents directory: $AgentsInstallDir ($agentCount agents)"
+        } else {
+            Write-Err "User agents directory not found"
+        }
+    }
+    if ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") {
+        $projectAgentsDir = Join-Path (Join-Path $script:ProjectPath ".claude") "agents"
+        if (Test-Path $projectAgentsDir) {
+            $agentCount = (Get-ChildItem -Path $projectAgentsDir -Directory -ErrorAction SilentlyContinue | Measure-Object).Count
+            Write-Success "Project agents directory: $projectAgentsDir ($agentCount agents)"
+        } else {
+            Write-Err "Project agents directory not found"
+        }
     }
 
-    # List agents
+    # List agents (show from whichever level was installed)
+    $listDir = $AgentsInstallDir
+    if ($script:InstallLevel -eq "project") {
+        $listDir = Join-Path (Join-Path $script:ProjectPath ".claude") "agents"
+    }
     Write-Host ""
     Write-Host "Installed agents:" -ForegroundColor Cyan
-
-    Get-ChildItem -Path $AgentsInstallDir -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem -Path $listDir -Directory -ErrorAction SilentlyContinue | ForEach-Object {
         Write-Host "  - $($_.Name)" -ForegroundColor White
     }
 }
@@ -474,9 +490,15 @@ function Main {
     }
     Write-Host ""
 
-    # Step 5: Install agents (always user-level — agents must be in ~/.claude/agents/)
+    # Step 5: Install agents to matching scope
     Write-Step "Step 5" "Install Agents"
-    Install-Agents
+    if ($script:InstallLevel -eq "user" -or $script:InstallLevel -eq "both") {
+        Install-Agents -TargetDir $AgentsInstallDir -Label "user-level"
+    }
+    if ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") {
+        $projectAgentsDir = Join-Path (Join-Path $script:ProjectPath ".claude") "agents"
+        Install-Agents -TargetDir $projectAgentsDir -Label "project-level"
+    }
     Write-Host ""
 
     # Step 6: Verify
@@ -487,12 +509,13 @@ function Main {
     Write-Host "Installed to:"
     if ($script:InstallLevel -eq "user" -or $script:InstallLevel -eq "both") {
         Write-Host "  - User instructions: $CustomInstructionsFile"
+        Write-Host "  - User agents: $AgentsInstallDir"
     }
     if ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") {
         Write-Host "  - Project instructions: $(Join-Path (Join-Path $script:ProjectPath '.claude') 'CLAUDE.md')"
+        Write-Host "  - Project agents: $(Join-Path (Join-Path $script:ProjectPath '.claude') 'agents')"
         Write-Host "  - .gitignore updated: $(Join-Path $script:ProjectPath '.gitignore')"
     }
-    Write-Host "  - Agents directory: $AgentsInstallDir"
     Write-Host ""
     Write-Host "Next steps:"
     Write-Host "  1. Start Claude Code: claude"
