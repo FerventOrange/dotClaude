@@ -22,6 +22,9 @@ $CategoryColors = @{
     "code" = "Red"
     "testing" = "Green"
     "infrastructure" = "Magenta"
+    "backend" = "Cyan"
+    "data" = "Green"
+    "frontend" = "Yellow"
 }
 
 function Write-Header {

@@ -191,7 +191,7 @@ function Install-Agents {
         return
     }
 
-    # Get category directories (github, documentation, code, testing, infrastructure)
+    # Get category directories (github, documentation, code, frontend, backend, data, testing, infrastructure)
     $categories = Get-ChildItem -Directory $sourceAgentsDir -ErrorAction SilentlyContinue
 
     if ($categories.Count -eq 0) {
@@ -339,7 +339,7 @@ function Main {
     Write-Host ""
     Write-Host "Next steps:"
     Write-Host "  1. Start Claude Code: claude"
-    Write-Host "  2. Test agent awareness: Ask - help me create a README"
+    Write-Host "  2. Test agent awareness: Ask - help me create project documentation"
     Write-Host "  3. List agents: .\install\list-agents.ps1"
     Write-Host ""
 }

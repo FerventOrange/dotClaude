@@ -34,10 +34,11 @@ for arg in "$@"; do
     esac
 done
 
-# Detect OS (Linux and Windows/WSL supported)
+# Detect OS (Linux, macOS, and Windows/WSL supported)
 detect_os() {
     case "$(uname -s)" in
         Linux*)     OS="linux";;
+        Darwin*)    OS="macos";;
         MINGW*|MSYS*|CYGWIN*) OS="windows";;
         *)          OS="unknown";;
     esac
@@ -62,7 +63,7 @@ install_claude_code() {
     echo -e "${YELLOW}Installing Claude Code...${NC}"
 
     case $OS in
-        linux)
+        linux|macos)
             if command -v npm &> /dev/null; then
                 echo "Using npm to install Claude Code..."
                 npm install -g @anthropic-ai/claude-code
@@ -76,8 +77,12 @@ install_claude_code() {
             else
                 echo -e "${RED}npm not found. Please install Node.js first:${NC}"
                 echo "  - Visit: https://nodejs.org/"
-                echo "  - Ubuntu/Debian: sudo apt install nodejs npm"
-                echo "  - Fedora: sudo dnf install nodejs npm"
+                if [ "$OS" = "macos" ]; then
+                    echo "  - macOS: brew install node"
+                else
+                    echo "  - Ubuntu/Debian: sudo apt install nodejs npm"
+                    echo "  - Fedora: sudo dnf install nodejs npm"
+                fi
                 echo ""
                 echo "After installing Node.js, run this script again."
                 exit 1
@@ -93,7 +98,7 @@ install_claude_code() {
             exit 1
             ;;
         *)
-            echo -e "${RED}Unsupported OS. This script supports Linux and Windows.${NC}"
+            echo -e "${RED}Unsupported OS. This script supports Linux, macOS, and Windows.${NC}"
             exit 1
             ;;
     esac
@@ -113,7 +118,7 @@ install_gh_cli() {
     echo -e "${YELLOW}Installing GitHub CLI...${NC}"
 
     case $OS in
-        linux)
+        linux|macos)
             if command -v apt-get &> /dev/null; then
                 echo "Using apt to install GitHub CLI..."
                 (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
@@ -193,7 +198,7 @@ install_agents() {
 
     installed_count=0
 
-    # Iterate through category directories (github, documentation, code, etc.)
+    # Iterate through category directories (github, documentation, code, frontend, backend, data, testing, infrastructure)
     for category_dir in "$SOURCE_AGENTS_DIR"/*/; do
         if [ -d "$category_dir" ]; then
             category_name=$(basename "$category_dir")
@@ -319,7 +324,7 @@ main() {
     echo ""
     echo "Next steps:"
     echo "  1. Start Claude Code: claude"
-    echo "  2. Test agent awareness: Ask 'help me create a README'"
+    echo "  2. Test agent awareness: Ask 'help me create project documentation'"
     echo "  3. List agents: ./install/list-agents.sh"
     echo ""
 }
