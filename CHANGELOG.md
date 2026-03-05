@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Upgraded **agent-creator**, **agent-updater**, and **agent-review-agent** to v2.0.0 with canonical agent template, batch operation support, cross-agent consistency enforcement, and overlap detection
+- Upgraded documentation agents (**changelog-agent**, **doc-review-agent**, **api-doc-agent**) to v2.0.0 with canonical template
+- Renamed **readme-agent** to **documentation-agent** with broadened scope (now generates all project docs: README, CONTRIBUTING, ARCHITECTURE, guides, CODE_OF_CONDUCT, LICENSE)
+- Updated all cross-references from readme-agent to documentation-agent across 14+ files
+
 ### Added
 - **Frontend agent cluster** with 4 new agents (PR #6):
   - **component-generator** - UI component scaffolding
