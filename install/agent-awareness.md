@@ -12,6 +12,8 @@ Add these instructions to your Claude Code configuration:
 
 **Location:** `~/.claude/CLAUDE.md` or project-level `.claude/instructions.md`
 
+> **Note:** The dotClaude installer places a minimal version of these instructions (from `custom-instructions.md`) into your CLAUDE.md automatically. This document provides extended configuration options for users who want more granular control over agent awareness, trigger rules, and multi-method integration.
+
 **Contents:**
 ```markdown
 # Agent Infrastructure Integration
@@ -40,6 +42,10 @@ You have access to a library of focused, scoped agents in the `agents/` director
 - **git-sync-agent**: Sync branches and manage remotes
   - Trigger: User asks to sync branches, rebase, merge, manage remotes
   - Usage: `claude --agent git-sync-agent`
+
+- **pr-review-agent**: Review pull requests with structured comments
+  - Trigger: User asks for PR review, review pull request, code review PR
+  - Usage: `claude --agent pr-review-agent`
 
 ### Documentation Agents
 - **documentation-agent**: Generate or update README.md files
@@ -83,6 +89,10 @@ You have access to a library of focused, scoped agents in the `agents/` director
   - Trigger: User asks about Terraform, infrastructure provisioning, HCL
   - Usage: `claude --agent terraform-agent`
 
+- **security-review-agent**: Review code for security vulnerabilities
+  - Trigger: User asks for security review, vulnerability scan, OWASP, secrets scan
+  - Usage: `claude --agent security-review-agent`
+
 ### Testing Agents
 - **debug-agent**: Debug and troubleshoot issues
   - Trigger: User asks to debug, troubleshoot, find root cause
@@ -112,6 +122,81 @@ You have access to a library of focused, scoped agents in the `agents/` director
 - **agent-review-agent**: Review agent quality and compliance
   - Trigger: User asks to review an agent, audit agent instructions
   - Usage: `claude --agent agent-review-agent`
+
+- **cicd-agent**: Generate and maintain CI/CD pipeline configurations
+  - Trigger: User asks about CI/CD, pipelines, GitHub Actions, workflows
+  - Usage: `claude --agent cicd-agent`
+
+- **deployment-agent**: Generate deployment scripts and configurations
+  - Trigger: User asks about deployment, release process, deploy scripts
+  - Usage: `claude --agent deployment-agent`
+
+- **docker-agent**: Generate Dockerfiles, docker-compose, and container configs
+  - Trigger: User asks about Docker, containers, Dockerfile, docker-compose
+  - Usage: `claude --agent docker-agent`
+
+- **env-config-agent**: Manage environment configuration and .env files
+  - Trigger: User asks about environment variables, .env files, config management
+  - Usage: `claude --agent env-config-agent`
+
+- **gitops-agent**: Generate GitOps manifests and configurations
+  - Trigger: User asks about GitOps, ArgoCD, Flux, Kubernetes manifests
+  - Usage: `claude --agent gitops-agent`
+
+### Backend Agents
+- **api-endpoint-agent**: Scaffold REST or GraphQL endpoints with types and middleware
+  - Trigger: User asks about API endpoint, REST route, CRUD, scaffold endpoint
+  - Usage: `claude --agent api-endpoint-agent`
+
+- **auth-agent**: Generate authentication flows, middleware, guards, and session/JWT setup
+  - Trigger: User asks about authentication, auth, login, JWT, session
+  - Usage: `claude --agent auth-agent`
+
+- **seed-data-agent**: Generate seed and fixture data for development and testing
+  - Trigger: User asks about seed data, fixtures, sample data, test data
+  - Usage: `claude --agent seed-data-agent`
+
+### Data Agents
+- **api-client-agent**: Generate typed API client code from OpenAPI, GraphQL, or tRPC schemas
+  - Trigger: User asks about API client, HTTP client, OpenAPI, tRPC
+  - Usage: `claude --agent api-client-agent`
+
+- **sql-migration-agent**: Generate and review database migration files
+  - Trigger: User asks about migration, schema change, database migration
+  - Usage: `claude --agent sql-migration-agent`
+
+- **sql-query-agent**: Build, review, and optimize SQL queries
+  - Trigger: User asks about SQL query, database query, optimize query
+  - Usage: `claude --agent sql-query-agent`
+
+- **sql-schema-agent**: Review and generate database schema definitions
+  - Trigger: User asks about database schema, table design, normalization
+  - Usage: `claude --agent sql-schema-agent`
+
+- **state-management-agent**: Scaffold stores, reducers, and context providers
+  - Trigger: User asks about state management, store, reducer, context
+  - Usage: `claude --agent state-management-agent`
+
+- **validation-schema-agent**: Generate Zod, Yup, or JSON validation schemas
+  - Trigger: User asks about validation, schema validation, Zod, Yup
+  - Usage: `claude --agent validation-schema-agent`
+
+### Frontend Agents
+- **accessibility-agent**: Audit UI components for WCAG 2.1 AA compliance
+  - Trigger: User asks about accessibility, a11y, WCAG, ARIA
+  - Usage: `claude --agent accessibility-agent`
+
+- **component-generator-agent**: Scaffold UI components with styles, tests, and exports
+  - Trigger: User asks about component, UI component, scaffold component
+  - Usage: `claude --agent component-generator-agent`
+
+- **form-builder-agent**: Generate form components with validation and error states
+  - Trigger: User asks about form, form builder, form validation
+  - Usage: `claude --agent form-builder-agent`
+
+- **route-generator-agent**: Generate pages and routes with layout wiring
+  - Trigger: User asks about routing, routes, pages, navigation
+  - Usage: `claude --agent route-generator-agent`
 
 ## Agent Usage Rules
 
@@ -151,7 +236,7 @@ Would you like me to:
 Before responding to documentation, git, code, testing, or infrastructure tasks:
 
 1. Check: Does an agent exist for this? (`ls agents/`)
-2. Read: What does the agent do? (`cat agents/[name]/README.md`)
+2. Read: What does the agent do? (`cat agents/[name]/instructions.md`)
 3. Recommend: Is this the best tool? (suggest agent)
 4. Proceed: Use agent or provide general help based on user choice
 
@@ -207,12 +292,12 @@ Would you like to use the api-doc-agent? (y/n)"
 
 ### Good - No Agent Available
 ```
-User: "Refactor this function to use async/await"
+User: "Help me configure my IDE settings"
 
-Claude: "I'll help you refactor this. (No specialized agent exists for
+Claude: "I'll help you with that. (No specialized agent exists for
 this task, so I'll assist directly.)"
 
-[Proceeds with refactoring]
+[Proceeds with IDE configuration help]
 ```
 
 ### Bad - Switches Without Asking
@@ -238,19 +323,39 @@ Quickly identify which category a request belongs to:
 | "git tag", "release tag", "versioning" | GitHub | git-tags-agent |
 | "github issue", "create issue" | GitHub | git-issues-agent |
 | "sync branch", "rebase", "merge" | GitHub | git-sync-agent |
+| "PR review", "review pull request" | GitHub | pr-review-agent |
 | "clean up code", "refactor" | Code | code-cleanup-agent |
 | "code review", "quality check" | Code | code-review-agent |
 | "lint", "format code", "style" | Code | code-linting-agent |
 | "dependencies", "packages", "vulnerability" | Code | dependency-agent |
 | "python", "pip", "virtual env" | Code | python-agent |
 | "terraform", "infrastructure", "HCL" | Code | terraform-agent |
+| "security review", "vulnerability", "OWASP" | Code | security-review-agent |
 | "debug", "troubleshoot", "root cause" | Testing | debug-agent |
 | "unit test", "test coverage" | Testing | unit-test-agent |
 | "integration test", "e2e test" | Testing | integration-test-agent |
+| "CI/CD", "pipeline", "GitHub Actions" | Infrastructure | cicd-agent |
+| "deployment", "deploy scripts" | Infrastructure | deployment-agent |
+| "Docker", "container", "Dockerfile" | Infrastructure | docker-agent |
+| "environment variables", ".env", "config" | Infrastructure | env-config-agent |
+| "GitOps", "ArgoCD", "Flux" | Infrastructure | gitops-agent |
 | "create agent", "new agent", "build agent" | Infrastructure | agent-creator |
 | "update dotClaude", "update agents" | Infrastructure | dotclaude-updater |
 | "update agent", "modify agent" | Infrastructure | agent-updater |
 | "review agent", "audit agent" | Infrastructure | agent-review-agent |
+| "API endpoint", "REST route", "CRUD" | Backend | api-endpoint-agent |
+| "authentication", "auth", "login", "JWT" | Backend | auth-agent |
+| "seed data", "fixtures", "sample data" | Backend | seed-data-agent |
+| "API client", "HTTP client", "OpenAPI", "tRPC" | Data | api-client-agent |
+| "migration", "schema change", "database migration" | Data | sql-migration-agent |
+| "SQL query", "database query", "optimize query" | Data | sql-query-agent |
+| "database schema", "table design", "normalization" | Data | sql-schema-agent |
+| "state management", "store", "reducer" | Data | state-management-agent |
+| "validation", "schema validation", "Zod", "Yup" | Data | validation-schema-agent |
+| "accessibility", "a11y", "WCAG", "ARIA" | Frontend | accessibility-agent |
+| "component", "UI component", "scaffold component" | Frontend | component-generator-agent |
+| "form", "form builder", "form validation" | Frontend | form-builder-agent |
+| "routing", "routes", "pages", "navigation" | Frontend | route-generator-agent |
 
 ## Special Case: agent-creator
 
@@ -275,7 +380,7 @@ ls agents/
 
 To read an agent's capabilities:
 ```bash
-cat agents/[agent-name]/README.md
+cat agents/[agent-name]/instructions.md
 ```
 
 To check MCP requirements:
@@ -386,6 +491,10 @@ Create a `.claude/agents.json` in your project:
       "triggers": ["sync branch", "rebase", "merge"],
       "auto_suggest": true
     },
+    "pr-review-agent": {
+      "triggers": ["PR review", "review pull request", "code review PR"],
+      "auto_suggest": true
+    },
     "code-cleanup-agent": {
       "triggers": ["clean up", "refactor", "dead code"],
       "auto_suggest": true
@@ -408,6 +517,10 @@ Create a `.claude/agents.json` in your project:
     },
     "terraform-agent": {
       "triggers": ["terraform", "infrastructure", "hcl"],
+      "auto_suggest": true
+    },
+    "security-review-agent": {
+      "triggers": ["security review", "vulnerability", "OWASP", "secrets scan"],
       "auto_suggest": true
     },
     "debug-agent": {
@@ -437,6 +550,78 @@ Create a `.claude/agents.json` in your project:
     },
     "agent-review-agent": {
       "triggers": ["review agent", "audit agent"],
+      "auto_suggest": true
+    },
+    "cicd-agent": {
+      "triggers": ["CI/CD", "pipeline", "GitHub Actions", "workflows"],
+      "auto_suggest": true
+    },
+    "deployment-agent": {
+      "triggers": ["deployment", "release process", "deploy scripts"],
+      "auto_suggest": true
+    },
+    "docker-agent": {
+      "triggers": ["Docker", "container", "Dockerfile", "docker-compose"],
+      "auto_suggest": true
+    },
+    "env-config-agent": {
+      "triggers": ["environment variables", ".env", "config management"],
+      "auto_suggest": true
+    },
+    "gitops-agent": {
+      "triggers": ["GitOps", "ArgoCD", "Flux", "Kubernetes manifests"],
+      "auto_suggest": true
+    },
+    "api-endpoint-agent": {
+      "triggers": ["API endpoint", "REST route", "CRUD", "scaffold endpoint"],
+      "auto_suggest": true
+    },
+    "auth-agent": {
+      "triggers": ["authentication", "auth", "login", "JWT", "session"],
+      "auto_suggest": true
+    },
+    "seed-data-agent": {
+      "triggers": ["seed data", "fixtures", "sample data", "test data"],
+      "auto_suggest": true
+    },
+    "api-client-agent": {
+      "triggers": ["API client", "HTTP client", "OpenAPI", "tRPC"],
+      "auto_suggest": true
+    },
+    "sql-migration-agent": {
+      "triggers": ["migration", "schema change", "database migration"],
+      "auto_suggest": true
+    },
+    "sql-query-agent": {
+      "triggers": ["SQL query", "database query", "optimize query"],
+      "auto_suggest": true
+    },
+    "sql-schema-agent": {
+      "triggers": ["database schema", "table design", "normalization"],
+      "auto_suggest": true
+    },
+    "state-management-agent": {
+      "triggers": ["state management", "store", "reducer", "context"],
+      "auto_suggest": true
+    },
+    "validation-schema-agent": {
+      "triggers": ["validation", "schema validation", "Zod", "Yup"],
+      "auto_suggest": true
+    },
+    "accessibility-agent": {
+      "triggers": ["accessibility", "a11y", "WCAG", "ARIA"],
+      "auto_suggest": true
+    },
+    "component-generator-agent": {
+      "triggers": ["component", "UI component", "scaffold component"],
+      "auto_suggest": true
+    },
+    "form-builder-agent": {
+      "triggers": ["form", "form builder", "form validation"],
+      "auto_suggest": true
+    },
+    "route-generator-agent": {
+      "triggers": ["routing", "routes", "pages", "navigation"],
       "auto_suggest": true
     }
   }
@@ -626,14 +811,15 @@ Keep a living document of all agents:
 ```markdown
 # Available Agents
 
-Last Updated: 2026-01-31
+Last Updated: 2026-03-05
 
-## GitHub (5 agents)
+## GitHub (6 agents)
 - git-commit-agent
 - git-pr-agent
 - git-tags-agent
 - git-issues-agent
 - git-sync-agent
+- pr-review-agent
 
 ## Documentation (4 agents)
 - documentation-agent
@@ -641,26 +827,51 @@ Last Updated: 2026-01-31
 - doc-review-agent
 - api-doc-agent
 
-## Code (6 agents)
+## Code (7 agents)
 - code-cleanup-agent
 - code-review-agent
 - code-linting-agent
 - dependency-agent
 - python-agent
 - terraform-agent
+- security-review-agent
 
 ## Testing (3 agents)
 - debug-agent
 - unit-test-agent
 - integration-test-agent
 
-## Infrastructure (4 agents)
+## Infrastructure (9 agents)
 - agent-creator
 - dotclaude-updater
 - agent-updater
 - agent-review-agent
+- cicd-agent
+- deployment-agent
+- docker-agent
+- env-config-agent
+- gitops-agent
 
-Total: 22 agents across 5 categories
+## Backend (3 agents)
+- api-endpoint-agent
+- auth-agent
+- seed-data-agent
+
+## Data (6 agents)
+- api-client-agent
+- sql-migration-agent
+- sql-query-agent
+- sql-schema-agent
+- state-management-agent
+- validation-schema-agent
+
+## Frontend (4 agents)
+- accessibility-agent
+- component-generator-agent
+- form-builder-agent
+- route-generator-agent
+
+Total: 42 agents across 8 categories
 ```
 
 ---
