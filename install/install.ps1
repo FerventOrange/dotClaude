@@ -230,7 +230,13 @@ function Set-AgentAwarenessUser {
 function Set-AgentAwarenessProject {
     Write-Host "Configuring project-level agent awareness..." -ForegroundColor Yellow
 
-    $projectClaudeMd = Join-Path $script:ProjectPath "CLAUDE.md"
+    $projectClaudeDir = Join-Path $script:ProjectPath ".claude"
+    $projectClaudeMd = Join-Path $projectClaudeDir "CLAUDE.md"
+
+    # Create .claude directory
+    if (-not (Test-Path $projectClaudeDir)) {
+        New-Item -ItemType Directory -Path $projectClaudeDir -Force | Out-Null
+    }
 
     # Check if CLAUDE.md already exists in project
     if (Test-Path $projectClaudeMd) {
@@ -249,7 +255,7 @@ function Set-AgentAwarenessProject {
         Write-Host "Backup created: $backupFile"
     }
 
-    # Copy custom instructions to project root
+    # Copy custom instructions to project .claude/ directory
     $sourceFile = Join-Path $DotClaudeDir "install\custom-instructions.md"
     if (Test-Path $sourceFile) {
         Copy-Item $sourceFile $projectClaudeMd -Force
@@ -262,25 +268,25 @@ function Set-AgentAwarenessProject {
     Update-Gitignore
 }
 
-# Add CLAUDE.md to .gitignore
+# Add .claude/ to .gitignore
 function Update-Gitignore {
     $gitignoreFile = Join-Path $script:ProjectPath ".gitignore"
-    $entry = "CLAUDE.md"
+    $entry = ".claude/"
 
     if (Test-Path $gitignoreFile) {
         $content = Get-Content $gitignoreFile -Raw -ErrorAction SilentlyContinue
         if ($content -and ($content -split "`n" | ForEach-Object { $_.Trim() }) -contains $entry) {
-            Write-Success "CLAUDE.md already in .gitignore"
+            Write-Success ".claude/ already in .gitignore"
             return
         }
         # Append entry
-        Add-Content -Path $gitignoreFile -Value "`n# dotClaude - project-level Claude Code instructions"
+        Add-Content -Path $gitignoreFile -Value "`n# dotClaude - project-level Claude Code configuration"
         Add-Content -Path $gitignoreFile -Value $entry
-        Write-Success "Added CLAUDE.md to existing .gitignore"
+        Write-Success "Added .claude/ to existing .gitignore"
     } else {
         # Create .gitignore with entry
-        Set-Content -Path $gitignoreFile -Value "# dotClaude - project-level Claude Code instructions`n$entry"
-        Write-Success "Created .gitignore with CLAUDE.md entry"
+        Set-Content -Path $gitignoreFile -Value "# dotClaude - project-level Claude Code configuration`n$entry"
+        Write-Success "Created .gitignore with .claude/ entry"
     }
 }
 
@@ -380,17 +386,17 @@ function Test-Installation {
 
     # Check project-level custom instructions
     if ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") {
-        $projectClaudeMd = Join-Path $script:ProjectPath "CLAUDE.md"
+        $projectClaudeMd = Join-Path (Join-Path $script:ProjectPath ".claude") "CLAUDE.md"
         if (Test-Path $projectClaudeMd) {
             Write-Success "Project-level instructions: $projectClaudeMd"
         } else {
             Write-Err "Project-level instructions not found"
         }
         $gitignoreFile = Join-Path $script:ProjectPath ".gitignore"
-        if ((Test-Path $gitignoreFile) -and ((Get-Content $gitignoreFile -Raw) -match "CLAUDE\.md")) {
-            Write-Success "CLAUDE.md in .gitignore"
+        if ((Test-Path $gitignoreFile) -and ((Get-Content $gitignoreFile -Raw) -match "\.claude/")) {
+            Write-Success ".claude/ in .gitignore"
         } else {
-            Write-Warn "CLAUDE.md not in .gitignore"
+            Write-Warn ".claude/ not in .gitignore"
         }
     }
 
@@ -483,7 +489,7 @@ function Main {
         Write-Host "  - User instructions: $CustomInstructionsFile"
     }
     if ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") {
-        Write-Host "  - Project instructions: $(Join-Path $script:ProjectPath 'CLAUDE.md')"
+        Write-Host "  - Project instructions: $(Join-Path (Join-Path $script:ProjectPath '.claude') 'CLAUDE.md')"
         Write-Host "  - .gitignore updated: $(Join-Path $script:ProjectPath '.gitignore')"
     }
     Write-Host "  - Agents directory: $AgentsInstallDir"
