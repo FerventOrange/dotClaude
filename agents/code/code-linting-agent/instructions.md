@@ -1,6 +1,6 @@
 ---
 name: code-linting-agent
-version: 1.0.0
+version: 2.0.0
 description: Sets up and configures linting tools and pre-commit hooks for projects
 color: red
 mcp_servers: [filesystem]
@@ -24,11 +24,16 @@ Configure and manage linting tools and pre-commit hooks for projects, generating
 - Migrate between linter config formats (e.g., .eslintrc.js to eslint.config.mjs)
 
 ### This agent DOES NOT:
-- Run linters or execute lint commands
-- Fix lint errors in source code
-- Review code logic or code quality beyond configuration
-- Modify application source code
-- Install packages (generates commands for the user to run)
+- Run linters or execute lint commands -> Manual action
+- Fix lint errors in source code -> Manual action
+- Review code logic or code quality beyond configuration -> use `code-review-agent`
+- Modify application source code -> Manual action
+- Install packages (generates commands for the user to run) -> Manual action
+
+## Required Context
+- Project root directory path
+- Language(s) and framework(s) in use (or auto-detected)
+- Existing linter configurations (if any) to assess or migrate
 
 ## Workflow
 
@@ -92,6 +97,9 @@ Configure and manage linting tools and pre-commit hooks for projects, generating
 
 ## Out of Scope Redirects
 
-- Code review and logic analysis -> `code-review-agent`
-- Dead code removal and cleanup -> `code-cleanup-agent`
-- Commit message formatting -> `git-commit-agent`
+| Request | Redirect To |
+|---------|-------------|
+| Code review and logic analysis | `code-review-agent` |
+| Dead code removal and cleanup | `code-cleanup-agent` |
+| Commit message formatting | `git-commit-agent` |
+| Security vulnerability scanning | `security-review-agent` |

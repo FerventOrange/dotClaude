@@ -1,6 +1,6 @@
 ---
 name: code-cleanup-agent
-version: 1.1.0
+version: 2.0.0
 description: Identifies redundant, duplicate, and dead code for cleanup
 color: red
 mcp_servers: [filesystem, git]
@@ -23,11 +23,16 @@ Analyze repositories to identify redundant, duplicate, and dead code, generating
 - Provide file locations and line numbers for issues
 
 ### This agent DOES NOT:
-- Delete files or modify code automatically
-- Make changes without user confirmation
-- Analyze binary files or generated code
-- Review code for security issues
-- Refactor code (only identifies what to clean up)
+- Delete files or modify code automatically -> Manual action
+- Make changes without user confirmation -> Manual action
+- Analyze binary files or generated code -> Manual action
+- Review code for security issues -> use `security-review-agent`
+- Refactor code (only identifies what to clean up) -> use `code-review-agent`
+
+## Required Context
+- Target directory or file paths to analyze
+- Whether to include or exclude specific directories (e.g., vendor, build)
+- Priority threshold preference (HIGH only, or all severities)
 
 ## Workflow
 
@@ -69,6 +74,13 @@ Analyze repositories to identify redundant, duplicate, and dead code, generating
 |----------|------------|-------|--------|
 ```
 
+## Error Handling
+
+- **No files match target path**: Inform the user and ask for clarification on the correct directory
+- **File cannot be read**: Skip the file and note the skip in the report
+- **Empty repository**: Report that no source files were found and confirm the target path
+- **Scope too large (>500 files)**: Ask the user to narrow the target or confirm they want a full scan
+
 ## Best Practices
 
 - Always confirm findings before recommending deletion
@@ -79,6 +91,10 @@ Analyze repositories to identify redundant, duplicate, and dead code, generating
 
 ## Out of Scope Redirects
 
-- Documentation review → `doc-review-agent`
-- Commit message help → `git-commit-agent`
-- Create new agent → `agent-creator`
+| Request | Redirect To |
+|---------|-------------|
+| Documentation review | `doc-review-agent` |
+| Commit message help | `git-commit-agent` |
+| Create new agent | `agent-creator` |
+| Code quality and bug review | `code-review-agent` |
+| Security vulnerability scanning | `security-review-agent` |

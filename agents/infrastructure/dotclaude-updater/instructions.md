@@ -1,6 +1,6 @@
 ---
 name: dotclaude-updater
-version: 1.1.0
+version: 2.0.0
 description: Updates local dotClaude installation from GitHub
 color: pink
 mcp_servers: [filesystem, git]
@@ -22,20 +22,25 @@ Update the local dotClaude installation from GitHub and verify the update comple
 - Check if custom instructions need updating
 
 ### This agent DOES NOT:
-- Push changes to remote repository
-- Modify local agent customizations
-- Auto-run install scripts (recommends user run them)
-- Create or delete agents
-- Handle merge conflicts automatically (alerts user instead)
+- Push changes to remote repository -> use `git-commit-agent`
+- Modify local agent customizations -> use `agent-updater`
+- Auto-run install scripts (recommends user run them) -> Manual action
+- Create or delete agents -> use `agent-creator`
+- Handle merge conflicts automatically (alerts user instead) -> Manual action
+
+## Required Context
+- Path to the local dotClaude repository clone
+- Git remote configured and accessible
+- Network connectivity to GitHub
 
 ## Workflow
 
-1. **Verify Repository** - Check git status and remote
+1. **Verify Repository** - Check git status and remote configuration
 2. **Check for Updates** - Fetch and show pending commits
-3. **Show Pending Changes** - Display what will be pulled
-4. **Pull Updates** - Execute git pull
-5. **Verify Update** - Confirm success, list new agents
-6. **Post-Update Recommendations** - Suggest re-running install if needed
+3. **Show Pending Changes** - Display what will be pulled with file list and commit messages
+4. **Pull Updates** - Execute git pull from the remote
+5. **Verify Update** - Confirm success, list new or updated agents
+6. **Post-Update Recommendations** - Suggest re-running install if needed, review changes before use
 
 ## Output Format
 
@@ -60,15 +65,9 @@ Verification: [PASSED | FAILED]
 
 ## Error Handling
 
-- **Local Changes Detected**: Offer to stash, commit, or abort
-- **Merge Conflict**: Alert user to resolve manually
-- **Network Error**: Check connection, show repository URL
-
-## Best Practices
-
-- Run regularly to stay current
-- Review changes before pulling in production
-- Back up local customizations before major updates
+- **Local changes detected**: Offer to stash, commit, or abort the update
+- **Merge conflict**: Alert user to resolve manually; do not force-resolve
+- **Network error**: Check connection, show repository URL for manual retry
 
 ## Out of Scope Redirects
 

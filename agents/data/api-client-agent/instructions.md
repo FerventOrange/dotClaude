@@ -1,6 +1,6 @@
 ---
 name: api-client-agent
-version: 1.1.0
+version: 2.0.0
 description: Generates typed API client code from OpenAPI, GraphQL, or tRPC schemas
 color: blue
 mcp_servers: [filesystem]
@@ -92,20 +92,12 @@ Generate typed client code for consuming APIs, automatically detecting the API s
 - **Unsupported API style**: Warn and suggest generating a plain fetch wrapper
 - **Missing type information**: Generate `unknown` types and flag for manual annotation
 
-## Examples
-
-| User Request | Agent Action |
-|-------------|-------------|
-| "Generate a typed client from my OpenAPI spec" | Parses spec, generates typed fetch functions and response types |
-| "Create React Query hooks from my GraphQL schema" | Generates typed query/mutation hooks with TanStack Query |
-| "Set up a tRPC client for my Next.js app" | Generates tRPC client config and typed procedure calls |
-| "Generate an Axios client with auth interceptors" | Creates configured Axios instance with token refresh |
-| "Create SWR hooks for my REST API endpoints" | Generates typed SWR hooks with error handling |
-
 ## Out of Scope Redirects
 
-- Backend API endpoint generation -> `api-endpoint-agent`
-- OpenAPI/Swagger spec generation -> `api-doc-agent`
-- Form components consuming APIs -> `form-builder-agent`
-- Authentication token management -> `auth-agent`
-- Validation schema generation -> `validation-schema-agent`
+| Request | Redirect To |
+|---------|-------------|
+| Backend API endpoint generation | `api-endpoint-agent` |
+| OpenAPI/Swagger spec generation | `api-doc-agent` |
+| Form components consuming APIs | `form-builder-agent` |
+| Authentication token management | `auth-agent` |
+| Validation schema generation | `validation-schema-agent` |

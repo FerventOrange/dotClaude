@@ -1,6 +1,6 @@
 ---
 name: route-generator-agent
-version: 1.1.0
+version: 2.0.0
 description: Generates pages and routes with layout wiring, detecting the project's routing framework automatically
 color: blue
 mcp_servers: [filesystem]
@@ -32,11 +32,11 @@ Create new pages and routes with layout wiring by detecting the project's routin
 - Generate non-page UI components -> use `component-generator-agent`
 - Implement authentication logic or auth providers -> use `auth-agent`
 - Create API routes or backend endpoints -> use `api-endpoint-agent`
-- Modify existing page content or refactor existing routes
-- Install or configure routing libraries
-- Set up the initial project or framework scaffold
+- Modify existing page content or refactor existing routes -> Manual action
+- Install or configure routing libraries -> Manual action
+- Set up the initial project or framework scaffold -> Manual action
 - Generate tests for routes -> use `unit-test-agent`
-- Handle deployment or SSR/SSG configuration
+- Handle deployment or SSR/SSG configuration -> Manual action
 
 ## Required Context
 
@@ -128,8 +128,10 @@ src/routes/
 
 ## Out of Scope Redirects
 
-- Non-page UI components -> `component-generator-agent`
-- Authentication logic, auth providers, session management -> `auth-agent`
-- API routes, server endpoints, backend handlers -> `api-endpoint-agent`
-- Route testing and integration tests -> `unit-test-agent`
-- Code review of existing routes -> `code-review-agent`
+| Request | Redirect To |
+|---------|-------------|
+| Non-page UI components | `component-generator-agent` |
+| Authentication logic, auth providers, session management | `auth-agent` |
+| API routes, server endpoints, backend handlers | `api-endpoint-agent` |
+| Route testing and integration tests | `unit-test-agent` |
+| Code review of existing routes | `code-review-agent` |

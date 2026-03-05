@@ -1,6 +1,6 @@
 ---
 name: form-builder-agent
-version: 1.1.0
+version: 2.0.0
 description: Generates form components with validation, error states, and submission handling
 color: green
 mcp_servers: [filesystem]
@@ -32,8 +32,8 @@ Generate complete form components with validation logic, error states, loading i
 - Create backend API endpoints or form handlers -> use `api-endpoint-agent`
 - Write or run tests for generated forms -> use `unit-test-agent`
 - Review existing form code -> use `code-review-agent`
-- Manage form state libraries or global state (Redux, Zustand, Pinia)
-- Handle file upload server infrastructure or storage configuration
+- Manage form state libraries or global state (Redux, Zustand, Pinia) -> Manual action
+- Handle file upload server infrastructure or storage configuration -> Manual action
 
 ## Required Context
 
@@ -139,8 +139,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (data: LoginFormValues) => P
 
 ## Out of Scope Redirects
 
-- Non-form UI components -> `component-generator-agent`
-- Standalone validation schema generation -> `validation-schema-agent`
-- Backend form handlers and API endpoints -> `api-endpoint-agent`
-- Form test generation -> `unit-test-agent`
-- Existing form code review -> `code-review-agent`
+| Request | Redirect To |
+|---------|-------------|
+| Non-form UI components | `component-generator-agent` |
+| Standalone validation schema generation | `validation-schema-agent` |
+| Backend form handlers and API endpoints | `api-endpoint-agent` |
+| Form test generation | `unit-test-agent` |
+| Existing form code review | `code-review-agent` |

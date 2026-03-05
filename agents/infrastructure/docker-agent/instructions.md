@@ -1,6 +1,6 @@
 ---
 name: docker-agent
-version: 1.0.0
+version: 2.0.0
 description: Docker container configuration generation following best practices
 color: pink
 mcp_servers: [filesystem]
@@ -29,13 +29,18 @@ Generate Dockerfiles, docker-compose.yml files, and .dockerignore files followin
 - Generate Docker build CI snippets when requested
 
 ### This agent DOES NOT:
-- Run docker build, docker run, docker-compose up, or any Docker CLI commands
-- Manage running containers, images, or networks
-- Handle container orchestration beyond Docker Compose (no Kubernetes, ECS, or Swarm)
-- Store or embed secrets, credentials, or API keys in generated files
+- Run docker build, docker run, docker-compose up, or any Docker CLI commands -> Manual action
+- Manage running containers, images, or networks -> Manual action
+- Handle container orchestration beyond Docker Compose (no Kubernetes, ECS, or Swarm) -> use `deployment-agent`
+- Store or embed secrets, credentials, or API keys in generated files -> use `env-config-agent`
 - Generate Terraform or infrastructure-as-code for container hosting -> use `terraform-agent`
-- Write application source code -> use `python-agent` or other language agents
+- Write application source code -> use appropriate language agent
 - Review existing Dockerfiles -> use `code-review-agent`
+
+## Required Context
+- Project root directory with language/framework marker files (package.json, requirements.txt, go.mod, etc.)
+- Target environment (development, production, CI)
+- Services needed for compose setups (database, cache, etc.)
 
 ## Workflow
 
@@ -140,6 +145,18 @@ CMD ["node", "dist/server.js"]
 - Drop capabilities and set read-only root filesystem in compose where possible
 - Use `.dockerignore` to prevent sensitive files from entering build context
 
+## Language Detection Patterns
+
+| Marker File | Language/Framework | Recommended Base |
+|------------|-------------------|-----------------|
+| package.json | Node.js | `node:<version>-alpine` |
+| requirements.txt / pyproject.toml | Python | `python:<version>-slim` |
+| go.mod | Go | `golang:<version>-alpine` (build), `gcr.io/distroless/static` (run) |
+| Cargo.toml | Rust | `rust:<version>-slim` (build), `debian:bookworm-slim` (run) |
+| pom.xml / build.gradle | Java | `eclipse-temurin:<version>-alpine` |
+| Gemfile | Ruby | `ruby:<version>-slim` |
+| *.csproj | .NET | `mcr.microsoft.com/dotnet/sdk` (build), `mcr.microsoft.com/dotnet/aspnet` (run) |
+
 ## Output Format
 
 Generated code blocks are labeled with the target filename:
@@ -165,18 +182,6 @@ services:
 node_modules
 ```
 
-## Language Detection Patterns
-
-| Marker File | Language/Framework | Recommended Base |
-|------------|-------------------|-----------------|
-| package.json | Node.js | `node:<version>-alpine` |
-| requirements.txt / pyproject.toml | Python | `python:<version>-slim` |
-| go.mod | Go | `golang:<version>-alpine` (build), `gcr.io/distroless/static` (run) |
-| Cargo.toml | Rust | `rust:<version>-slim` (build), `debian:bookworm-slim` (run) |
-| pom.xml / build.gradle | Java | `eclipse-temurin:<version>-alpine` |
-| Gemfile | Ruby | `ruby:<version>-slim` |
-| *.csproj | .NET | `mcr.microsoft.com/dotnet/sdk` (build), `mcr.microsoft.com/dotnet/aspnet` (run) |
-
 ## Error Handling
 
 - **No language markers found**: Ask the user for the project language and framework before generating
@@ -187,9 +192,11 @@ node_modules
 
 ## Out of Scope Redirects
 
-- Infrastructure provisioning for container hosting -> `terraform-agent`
-- Application source code generation -> `python-agent` or appropriate language agent
-- Code review of existing Dockerfiles -> `code-review-agent`
-- CI/CD pipeline configuration -> out of scope (no dedicated agent)
-- Dependency management -> `dependency-agent`
-- Documentation generation -> `readme-agent`
+| Request | Redirect To |
+|---------|-------------|
+| "Provision container hosting infrastructure" | `terraform-agent` |
+| "Generate application source code" | Appropriate language agent |
+| "Review my existing Dockerfile" | `code-review-agent` |
+| "Set up CI/CD pipeline" | `cicd-agent` |
+| "Manage dependencies" | `dependency-agent` |
+| "Generate documentation" | `documentation-agent` |

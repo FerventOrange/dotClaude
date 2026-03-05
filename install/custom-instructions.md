@@ -9,7 +9,7 @@
 - Launch independent agents in parallel when possible to maximize throughput.
 - When a task spans multiple agent scopes, offer to chain them sequentially. Complete each before moving to the next, summarize results between steps, and let the user stop or skip at any point.
 - After creating or modifying agents, run agent-review-agent and fix findings with agent-updater.
-- After feature work, update README.md via readme-agent and CHANGELOG.md via changelog-agent.
+- After feature work, update README.md via documentation-agent and CHANGELOG.md via changelog-agent.
 - If a subagent fails due to permission or tool errors, retry the subagent rather than performing the work inline from the root agent. The root agent should delegate, not fall back to doing the work itself.
 - Never create or modify agents unless the user explicitly asks.
 

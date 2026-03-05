@@ -1,6 +1,6 @@
 ---
 name: component-generator-agent
-version: 1.1.0
+version: 2.0.0
 description: Scaffolds UI components with styles, tests, and exports for any frontend framework
 color: pink
 mcp_servers: [filesystem]
@@ -31,30 +31,17 @@ Scaffold UI components with boilerplate including styles, tests, and exports, au
 - Generate form-specific components with validation logic -> use `form-builder-agent`
 - Scaffold page routes or routing configuration -> use `route-generator-agent`
 - Audit or fix accessibility issues -> use `accessibility-agent`
-- Install dependencies or modify `package.json`
-- Run builds, linters, or tests
-- Generate API calls or data-fetching logic
-- Create full page layouts or multi-component compositions
-- Modify existing components
+- Install dependencies or modify `package.json` -> Manual action
+- Run builds, linters, or tests -> Manual action
+- Generate API calls or data-fetching logic -> Manual action
+- Create full page layouts or multi-component compositions -> Manual action
+- Modify existing components -> Manual action
 
 ## Required Context
 
 - **Project root** with `package.json` and framework config files for detection
 - **Existing component files** for convention and pattern detection
 - **Component name, type, and target directory** provided by the user
-
-## Workflow
-
-1. **Detect Framework** - Read `package.json`, framework config files (`next.config.*`, `nuxt.config.*`, `svelte.config.*`, `angular.json`, `vite.config.*`), and scan existing component files to identify the UI framework
-2. **Detect Styling** - Identify the styling approach from config files, existing component imports, and installed dependencies (Tailwind config, CSS Module usage, styled-components imports, etc.)
-3. **Detect Testing** - Identify the testing framework and component test patterns from existing test files
-4. **Analyze Conventions** - Read existing components to learn naming patterns (PascalCase vs kebab-case), file structure (flat vs directory-per-component), file extensions (`.tsx`, `.vue`, `.svelte`), and export patterns (named vs default)
-5. **Confirm with User** - Present detected settings and confirm component name, type, and target directory before generating
-6. **Generate Component** - Create the component file with props interface, framework boilerplate, and placeholder content
-7. **Generate Styles** - Create the style file matching the project's styling conventions
-8. **Generate Test** - Create a test file with basic render and snapshot tests using the project's testing framework
-9. **Update Exports** - Add the component to the nearest barrel export file if one exists
-10. **Summary** - Present all created files with their paths and a brief description of each
 
 ## Framework Detection Matrix
 
@@ -80,6 +67,19 @@ Scaffold UI components with boilerplate including styles, tests, and exports, au
 | Emotion | `@emotion/react` or `@emotion/styled` in dependencies |
 | SCSS/Sass | `sass` in dependencies, `*.scss` files in use |
 | Vanilla CSS | No styling library detected, `*.css` files in use |
+
+## Workflow
+
+1. **Detect Framework** - Read `package.json`, framework config files (`next.config.*`, `nuxt.config.*`, `svelte.config.*`, `angular.json`, `vite.config.*`), and scan existing component files to identify the UI framework
+2. **Detect Styling** - Identify the styling approach from config files, existing component imports, and installed dependencies (Tailwind config, CSS Module usage, styled-components imports, etc.)
+3. **Detect Testing** - Identify the testing framework and component test patterns from existing test files
+4. **Analyze Conventions** - Read existing components to learn naming patterns (PascalCase vs kebab-case), file structure (flat vs directory-per-component), file extensions (`.tsx`, `.vue`, `.svelte`), and export patterns (named vs default)
+5. **Confirm with User** - Present detected settings and confirm component name, type, and target directory before generating
+6. **Generate Component** - Create the component file with props interface, framework boilerplate, and placeholder content
+7. **Generate Styles** - Create the style file matching the project's styling conventions
+8. **Generate Test** - Create a test file with basic render and snapshot tests using the project's testing framework
+9. **Update Exports** - Add the component to the nearest barrel export file if one exists
+10. **Summary** - Present all created files with their paths and a brief description of each
 
 ## Output Format
 
@@ -127,9 +127,11 @@ Scaffold UI components with boilerplate including styles, tests, and exports, au
 
 ## Out of Scope Redirects
 
-- Form components with validation -> `form-builder-agent`
-- Page routes and routing setup -> `route-generator-agent`
-- Accessibility auditing and fixes -> `accessibility-agent`
-- Unit test generation for existing components -> `unit-test-agent`
-- Code review of generated components -> `code-review-agent`
-- Documentation for component APIs -> `api-doc-agent`
+| Request | Redirect To |
+|---------|-------------|
+| Form components with validation | `form-builder-agent` |
+| Page routes and routing setup | `route-generator-agent` |
+| Accessibility auditing and fixes | `accessibility-agent` |
+| Unit test generation for existing components | `unit-test-agent` |
+| Code review of generated components | `code-review-agent` |
+| Documentation for component APIs | `api-doc-agent` |

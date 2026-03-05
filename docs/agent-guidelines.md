@@ -25,7 +25,7 @@ Each agent in this repository must be **narrowly focused** on a specific task, d
 - `code-reviewer` - Reviews code for best practices and bugs
 - `python-coder` - Reviews code in python using best practices
 - `security-reviewer` -  Reviews code for best security practices
-- `documentation-writer` -  Reviews code for best security practices
+- `documentation-writer` -  Generates and updates project documentation files
 
 
 ❌ **Bad Examples:**
@@ -36,7 +36,7 @@ Each agent in this repository must be **narrowly focused** on a specific task, d
 ### 2. Clear Input/Output Contract
 Each agent should have well-defined:
 - **Input requirements** - What files, context, or data it needs
-- **Explaination** - What changes it would like to make and why, always ask for confirmation.
+- **Explanation** - What changes it would like to make and why, always ask for confirmation.
 - **Output format** - What it produced (files, reports, suggestions)
 - **Dependencies** - What tools or MCP servers it requires
 
@@ -61,62 +61,39 @@ Every agent must include:
 ```
 agents/
 └── agent-name/
-    ├── agent.json          # Agent configuration and metadata
-    ├── README.md           # Documentation and usage guide
-    ├── instructions.md     # Detailed instructions for Claude
-    ├── examples/           # Example inputs/outputs
-    └── mcp-requirements.txt # Required MCP servers (if any)
+    └── instructions.md     # Agent instructions with YAML frontmatter
 ```
 
-### Agent Manifest (agent.json)
-
-```json
-{
-  "name": "git-commit-agent",
-  "version": "1.0.0",
-  "description": "Assists in writing conventional commit messages",
-  "scope": "git workflows",
-  "author": "Your Team",
-  "created": "2026-01-17",
-  "updated": "2026-01-17",
-  "mcp_servers": [
-    "filesystem",
-    "git"
-  ],
-  "dependencies": [],
-  "input_types": [
-    "git diff",
-    "staged files"
-  ],
-  "output_types": [
-    "commit message",
-    "commit suggestions"
-  ],
-  "constraints": [
-    "Only works with git repositories",
-    "Requires staged changes"
-  ]
-}
-```
+Each agent is a single directory containing one `instructions.md` file. All metadata is declared in YAML frontmatter at the top of the file.
 
 ### Instructions Format (instructions.md)
 
+All agents follow the **v2.0.0 canonical template** (see below). The file begins with YAML frontmatter for metadata, followed by the instruction body.
+
 ```markdown
-# Agent: [Name]
+---
+name: git-commit-agent
+version: 2.0.0
+description: Assists in writing conventional commit messages
+color: green
+mcp_servers:
+  - filesystem
+  - git
+---
+
+# Agent: git-commit-agent
 
 ## Primary Objective
 [One sentence describing what this agent does]
 
 ## Scope Boundaries
 ### This agent DOES:
-- [Specific task 1]
-- [Specific task 2]
-- [Specific task 3]
+- [Verb-led specific task 1]
+- [Verb-led specific task 2]
 
 ### This agent DOES NOT:
-- [Out of scope task 1]
-- [Out of scope task 2]
-- [Redirect to other-agent for this]
+- [Out of scope task 1] -> use `other-agent`
+- [Out of scope task 2] -> Manual action
 
 ## Required Context
 [What information the agent needs to function]
@@ -132,67 +109,93 @@ agents/
 ## Error Handling
 [How to handle common issues]
 
-## Examples
-[Include 4-5 clear examples]
+## Out of Scope Redirects
+| Request | Redirect To |
+|---------|-------------|
+| [Request type] | `other-agent` |
 ```
+
+---
+
+## v2.0.0 Canonical Template
+
+All agents in this repository must conform to the v2.0.0 canonical template. This ensures consistency, reviewability, and composability across the entire agent collection.
+
+### YAML Frontmatter Fields
+
+Every `instructions.md` must begin with these frontmatter fields:
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Agent identifier (matches directory name) |
+| `version` | Yes | Semantic version (currently `2.0.0`) |
+| `description` | Yes | One-line summary of the agent's purpose |
+| `color` | No | Display color for UI integrations |
+| `mcp_servers` | No | List of MCP servers the agent requires |
+
+### Required Sections (in order)
+
+The instruction body must follow this exact section order:
+
+1. **Primary Objective** - Single sentence stating what the agent does
+2. **Scope Boundaries** - Two subsections:
+   - **This agent DOES:** - Verb-led bullet list of in-scope tasks
+   - **This agent DOES NOT:** - Redirected bullet list with `-> use \`agent\`` or `-> Manual action`
+3. **Required Context** - What inputs, files, or information the agent needs
+4. **Workflow** - Numbered steps describing the agent's execution flow
+5. **Output Format** - What the agent produces and how it is structured
+6. **Error Handling** - How to handle common failure modes
+7. **Out of Scope Redirects** - Table mapping off-topic requests to the correct agent
 
 ---
 
 ## MCP Server Integration
 
-### MCP Requirements File
-Each agent that requires MCP servers must declare them in `mcp-requirements.txt`:
-
-```txt
-# MCP servers required for this agent
-filesystem>=1.0.0
-git>=1.0.0
-github>=2.0.0  # optional, for advanced features
-```
+MCP servers are declared in the YAML frontmatter of each agent's `instructions.md` file. No separate requirements files are needed.
 
 ### MCP Server Discovery
 ```bash
-# Check what MCP servers an agent needs
-cat agents/[agent-name]/mcp-requirements.txt
+# Check what MCP servers an agent needs (declared in frontmatter)
+head -20 agents/[agent-name]/instructions.md
 ```
 
 ---
 
 ## Agent Scope Categories
 
-To maintain organization, agents should fall into one of these categories:
+To maintain organization, agents fall into one of these 8 categories (42 agents total):
 
-### 1. Code Generation
-- Narrow focus: Generate specific types of code
-- Examples: `react-component-generator`, `sql-query-builder`, `dockerfile-creator`
+### 1. Backend (3 agents)
+- Narrow focus: Server-side code generation and patterns
+- Examples: `api-endpoint-agent`, `database-agent`, `backend-coder`
 
-### 2. Code Analysis
-- Narrow focus: Analyze code for specific issues
-- Examples: `security-scanner`, `performance-profiler`, `dependency-auditor`
+### 2. Code (7 agents)
+- Narrow focus: Code analysis, review, and generation
+- Examples: `code-reviewer`, `security-reviewer`, `python-coder`, `refactor-agent`
 
-### 3. Documentation
-- Narrow focus: Create specific documentation types
-- Examples: `readme-generator`, `api-doc-writer`, `changelog-creator`
+### 3. Data (6 agents)
+- Narrow focus: Data processing, transformation, and analysis
+- Examples: `csv-analyzer`, `json-transformer`, `data-pipeline-agent`
 
-### 4. Testing
-- Narrow focus: Handle specific testing tasks
-- Examples: `unit-test-writer`, `integration-test-generator`, `test-data-creator`
+### 4. Documentation (4 agents)
+- Narrow focus: Create and maintain specific documentation types
+- Examples: `documentation-agent`, `api-doc-agent`, `changelog-agent`, `doc-review-agent`
 
-### 5. Git Workflows
-- Narrow focus: Specific git operations
-- Examples: `commit-message-helper`, `branch-namer`, `pr-description-writer`
+### 5. Frontend (4 agents)
+- Narrow focus: Client-side code and UI components
+- Examples: `react-component-agent`, `css-agent`, `accessibility-agent`
 
-### 6. Refactoring
-- Narrow focus: Specific refactoring patterns
-- Examples: `extract-function`, `rename-variables`, `simplify-conditionals`
+### 6. GitHub (6 agents)
+- Narrow focus: Git operations and GitHub workflows
+- Examples: `git-commit-agent`, `git-pr-agent`, `git-tags-agent`, `git-problems-agent`
 
-### 7. Configuration
-- Narrow focus: Manage specific config files
-- Examples: `eslint-configurator`, `docker-compose-builder`, `env-file-manager`
+### 7. Infrastructure (9 agents)
+- Narrow focus: Internal tooling, setup, and agent management
+- Examples: `agent-creator`, `agent-review-agent`, `agent-updater`, `dotclaude-installer`
 
-### 8. Infrastructure
-- Narrow focus: Internal tooling and setup
-- Examples: `agent-creator`, `dotclaude-updater`
+### 8. Testing (3 agents)
+- Narrow focus: Test creation, execution, and coverage
+- Examples: `test-writer`, `test-runner`, `test-coverage-agent`
 
 ---
 
@@ -205,8 +208,7 @@ Before adding an agent to the repository, verify:
 - [ ] Agent doesn't overlap significantly with existing agents
 - [ ] Agent can be composed with other agents for complex workflows
 - [ ] Agent has clear input/output contracts
-- [ ] Agent declares all MCP server dependencies
-- [ ] Agent includes examples demonstrating its scope
+- [ ] Agent declares all MCP server dependencies in YAML frontmatter
 - [ ] Agent documentation explains when NOT to use it
 - [ ] Agent has a meaningful name that reflects its limited scope
 
@@ -247,22 +249,22 @@ Before adding an agent to the repository, verify:
 Use agents in sequence for multi-step tasks:
 ```bash
 # Step 1: Analyze code
-claude-code --agent code-analyzer src/
+claude --agent code-analyzer src/
 
 # Step 2: Generate tests based on analysis
-claude-code --agent test-writer src/module.py
+claude --agent test-writer src/module.py
 
 # Step 3: Run and verify tests
-claude-code --agent test-runner tests/
+claude --agent test-runner tests/
 ```
 
 ### Switching Between Agents
 ```bash
 # Start with one agent
-claude-code --agent api-doc-generator
+claude --agent api-doc-generator
 
 # Switch to another for different task
-claude-code --agent code-reviewer
+claude --agent code-reviewer
 ```
 
 ### Agent Recommendations
@@ -274,7 +276,7 @@ I'm the git-commit-agent agent, focused solely on crafting commit messages.
 Your request to refactor this code is outside my scope. 
 I recommend using the 'code-refactorer' agent for this task:
 
-  claude-code --agent code-refactorer
+  claude --agent code-refactorer
 
 Would you like me to help with your commit message instead?
 ```
@@ -353,7 +355,7 @@ Add to Claude Code config:
 }
 
 ## Verification
-claude-code --test-mcp git
+claude --test-mcp git
 ```
 
 ---
@@ -376,7 +378,7 @@ When a request is out of scope, guide users to the right agent.
 Only require MCP servers that are absolutely necessary.
 
 ### 6. Test in Isolation
-Each agent should work independently without requiring other agents running in parralel.
+Each agent should work independently without requiring other agents running in parallel.
 
 ### 7. Version Carefully
 Use semantic versioning and document breaking changes clearly.
@@ -388,11 +390,10 @@ Use semantic versioning and document breaking changes clearly.
 ### Creating a New Agent
 ```bash
 # Use the agent template generator
-./scripts/create-agent.sh my-new-agent
+claude --agent agent-creator
 
-# Edit the generated files
-cd agents/my-new-agent
-vim instructions.md agent.json
+# The agent-creator will scaffold the new agent directory
+# with a properly formatted instructions.md file
 ```
 
 ### Testing an Agent
@@ -400,8 +401,8 @@ vim instructions.md agent.json
 # Test locally
 claude --agent my-new-agent
 
-# Check MCP requirements
-cat agents/my-new-agent/mcp-requirements.txt
+# Check MCP requirements (declared in frontmatter)
+head -20 agents/my-new-agent/instructions.md
 ```
 
 ### Adding to Repository
@@ -424,9 +425,15 @@ When reviewing new agents, check:
 2. **Overlap:** Does it duplicate existing agents?
 3. **Documentation:** Are boundaries clear?
 4. **Examples:** Are there enough use cases?
-5. **MCP Dependencies:** Are they minimal and justified?
+5. **MCP Dependencies:** Are they minimal, justified, and declared in YAML frontmatter?
 6. **Naming:** Does the name reflect the limited scope?
 7. **Composability:** Can it work with other agents?
+8. **v2.0.0 Compliance:** Does the agent follow the canonical template?
+   - Canonical section order (Primary Objective > Scope Boundaries > Required Context > Workflow > Output Format > Error Handling > Out of Scope Redirects)
+   - DOES list uses verb-led bullets
+   - DOES NOT list redirects to specific agents or "Manual action"
+   - Required Context section is present and populated
+   - YAML frontmatter includes name, version, and description
 
 ---
 

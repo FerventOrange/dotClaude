@@ -77,7 +77,7 @@ cd dotClaude
 
 | Agent | Purpose |
 |-------|---------|
-| **readme-agent** | Generate and update README.md files |
+| **documentation-agent** | Generate and update project documentation (README, CONTRIBUTING, guides) |
 | **changelog-agent** | Generate CHANGELOG.md from git history |
 | **doc-review-agent** | Review documentation quality |
 | **api-doc-agent** | Generate API documentation from code |
@@ -146,11 +146,12 @@ cd dotClaude
 
 ## Usage Examples
 
-### Generate a README
+### Generate Project Documentation
 
 ```bash
 cd your-project
-claude --agent readme-agent
+claude --agent documentation-agent
+# Generates README.md, CONTRIBUTING.md, ARCHITECTURE.md, Getting Started guides, and more
 ```
 
 ### Create a Changelog
@@ -196,7 +197,7 @@ With agent awareness enabled, Claude can chain agents:
 
 ```
 You: "Document my project completely"
-Claude will offer: readme-agent -> changelog-agent -> doc-review-agent
+Claude will offer: documentation-agent (README, CONTRIBUTING, ARCHITECTURE) -> changelog-agent -> doc-review-agent
 ```
 
 ```
@@ -217,11 +218,12 @@ After installation, Claude automatically recommends agents when you ask for help
 Example interaction:
 
 ```
-You: I need to create a README
+You: I need to create project documentation
 
 Claude: I can help with that! We have a specialized agent:
-  Agent: readme-agent
-  Usage: claude --agent readme-agent
+  Agent: documentation-agent
+  Usage: claude --agent documentation-agent
+  It can generate README, CONTRIBUTING, ARCHITECTURE, and other project docs.
   Would you like to use it? (y/n)
 ```
 

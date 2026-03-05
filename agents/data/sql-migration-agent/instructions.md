@@ -1,6 +1,6 @@
 ---
 name: sql-migration-agent
-version: 1.1.0
+version: 2.0.0
 description: Generates and reviews database migration files for Prisma, Knex, raw SQL, and other tools
 color: red
 mcp_servers: [filesystem]
@@ -27,7 +27,7 @@ Generate and review database migration files, automatically detecting the projec
 - Follow the project's existing migration patterns and naming conventions
 
 ### This agent DOES NOT:
-- Execute migrations against a database
+- Execute migrations against a database -> Manual action
 - Generate seed data -> use `seed-data-agent`
 - Design or review database schemas -> use `sql-schema-agent`
 - Write application queries -> use `sql-query-agent`
@@ -101,20 +101,12 @@ Generate and review database migration files, automatically detecting the projec
 - **Missing rollback logic**: Generate rollback and flag any irreversible operations (data transformations)
 - **Conflicting migration names/numbers**: Detect and suggest resolving conflicts
 
-## Examples
-
-| Prompt | Behavior |
-|--------|----------|
-| "Generate a Prisma migration to add a comments table" | Detects Prisma, generates migration SQL with up/down |
-| "Create a Knex migration to add an email column to users" | Generates `exports.up` / `exports.down` JS functions |
-| "Review my latest migration for safety issues" | Checks for destructive ops, missing rollback, data loss |
-| "Generate a data migration to backfill user display names" | Creates data transformation migration |
-| "Create a Django migration for splitting the address field" | Generates Python migration with forwards/backwards |
-
 ## Out of Scope Redirects
 
-- Database schema design and review -> `sql-schema-agent`
-- Application query writing -> `sql-query-agent`
-- Seed data generation -> `seed-data-agent`
-- API endpoint generation -> `api-endpoint-agent`
-- Environment/credentials management -> `env-config-agent`
+| Request | Redirect To |
+|---------|-------------|
+| Database schema design and review | `sql-schema-agent` |
+| Application query writing | `sql-query-agent` |
+| Seed data generation | `seed-data-agent` |
+| API endpoint generation | `api-endpoint-agent` |
+| Environment/credentials management | `env-config-agent` |

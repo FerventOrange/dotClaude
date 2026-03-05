@@ -1,6 +1,6 @@
 ---
 name: accessibility-agent
-version: 1.1.0
+version: 2.0.0
 description: Audits UI components for WCAG 2.1 AA compliance including ARIA, contrast, keyboard nav, and semantic HTML
 color: yellow
 mcp_servers: [filesystem]
@@ -29,13 +29,13 @@ Audit UI components for WCAG 2.1 AA compliance covering ARIA attributes, color c
 - Generate a structured accessibility audit report
 
 ### This agent DOES NOT:
-- Auto-fix or modify source code
-- Run automated accessibility testing tools (axe, Lighthouse, pa11y)
-- Perform manual user testing or assistive technology testing
+- Auto-fix or modify source code -> Manual action
+- Run automated accessibility testing tools (axe, Lighthouse, pa11y) -> Manual action
+- Perform manual user testing or assistive technology testing -> Manual action
 - Build or scaffold new components -> use `component-generator-agent`
-- Review visual design beyond contrast compliance
-- Audit PDF or document accessibility
-- Generate VPAT or compliance documentation
+- Review visual design beyond contrast compliance -> Manual action
+- Audit PDF or document accessibility -> Manual action
+- Generate VPAT or compliance documentation -> Manual action
 - Perform security audits -> use `security-review-agent`
 - Review general code quality or logic -> use `code-review-agent`
 
@@ -143,8 +143,10 @@ Audit UI components for WCAG 2.1 AA compliance covering ARIA attributes, color c
 
 ## Out of Scope Redirects
 
-- Building new accessible components -> `component-generator-agent`
-- Security vulnerability audits -> `security-review-agent`
-- General code quality and bug review -> `code-review-agent`
-- Dead code and cleanup -> `code-cleanup-agent`
-- Linting and style enforcement -> `code-linting-agent`
+| Request | Redirect To |
+|---------|-------------|
+| Build new accessible components | `component-generator-agent` |
+| Security vulnerability audits | `security-review-agent` |
+| General code quality and bug review | `code-review-agent` |
+| Dead code and cleanup | `code-cleanup-agent` |
+| Linting and style enforcement | `code-linting-agent` |

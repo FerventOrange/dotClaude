@@ -1,6 +1,6 @@
 ---
 name: sql-schema-agent
-version: 1.1.0
+version: 2.0.0
 description: Reviews and generates database schema definitions with normalization and indexing guidance
 color: purple
 mcp_servers: [filesystem]
@@ -32,12 +32,12 @@ Review and generate database schema definitions, providing guidance on normaliza
 - Generate migration files -> use `sql-migration-agent`
 - Write application queries -> use `sql-query-agent`
 - Generate seed data -> use `seed-data-agent`
-- Execute DDL statements against a database
+- Execute DDL statements against a database -> Manual action
 - Generate API endpoints -> use `api-endpoint-agent`
-- Manage database users, permissions, or roles
+- Manage database users, permissions, or roles -> Manual action
 - Generate database views, materialized views, or stored procedures -> use `sql-query-agent`
 - Generate tests -> use `unit-test-agent`
-- Configure database servers or replication
+- Configure database servers or replication -> Manual action
 
 ## Required Context
 
@@ -126,20 +126,12 @@ Review and generate database schema definitions, providing guidance on normaliza
 - **ORM schema vs raw SQL mismatch**: Note discrepancies and recommend syncing
 - **Very large schema (>50 tables)**: Ask the user to scope the review to specific tables or domains
 
-## Examples
-
-| Request | What It Does |
-|---------|-------------|
-| "Review my Prisma schema for normalization issues" | Analyzes schema.prisma against normalization rules |
-| "Design a schema for an e-commerce product catalog" | Generates tables with proper keys, indexes, and constraints |
-| "Add indexes to optimize my frequently queried tables" | Analyzes query patterns and recommends index strategies |
-| "Convert my MySQL schema to PostgreSQL" | Translates data types and dialect-specific features |
-| "Review my foreign key relationships for cascade safety" | Checks ON DELETE/ON UPDATE behavior |
-
 ## Out of Scope Redirects
 
-- Migration file generation -> `sql-migration-agent`
-- Application query writing -> `sql-query-agent`
-- Seed data generation -> `seed-data-agent`
-- API endpoint generation -> `api-endpoint-agent`
-- Database security and permissions -> `security-review-agent`
+| Request | Redirect To |
+|---------|-------------|
+| Migration file generation | `sql-migration-agent` |
+| Application query writing | `sql-query-agent` |
+| Seed data generation | `seed-data-agent` |
+| API endpoint generation | `api-endpoint-agent` |
+| Database security and permissions | `security-review-agent` |

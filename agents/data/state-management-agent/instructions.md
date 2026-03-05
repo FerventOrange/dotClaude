@@ -1,6 +1,6 @@
 ---
 name: state-management-agent
-version: 1.1.0
+version: 2.0.0
 description: Scaffolds stores, reducers, and context providers matching the project's framework patterns
 color: pink
 mcp_servers: [filesystem]
@@ -33,8 +33,8 @@ Scaffold state management code including stores, reducers, slices, and context p
 - Generate form state management -> use `form-builder-agent`
 - Generate database models or queries -> use `sql-query-agent`
 - Generate tests -> use `unit-test-agent`
-- Install or configure state management libraries
-- Manage server-side caching or session state
+- Install or configure state management libraries -> Manual action
+- Manage server-side caching or session state -> Manual action
 
 ## Required Context
 
@@ -96,20 +96,12 @@ Scaffold state management code including stores, reducers, slices, and context p
 - **Multiple state libraries detected**: Ask the user which to target
 - **Complex async requirements**: Suggest appropriate patterns (createAsyncThunk, TanStack Query, etc.)
 
-## Examples
-
-| Request | Result |
-|---------|--------|
-| "Create a Zustand store for user authentication state" | Generates typed store with login/logout actions |
-| "Add a Redux Toolkit slice for shopping cart" | Generates slice with reducers, actions, and selectors |
-| "Set up a Pinia store for my Vue app's notifications" | Generates defineStore with state, getters, actions |
-| "Create a React Context for theme management" | Generates context, provider, and useTheme hook |
-| "Generate an XState machine for a multi-step form" | Creates state machine with guards and actions |
-
 ## Out of Scope Redirects
 
-- UI components -> `component-generator-agent`
-- API client and data fetching -> `api-client-agent`
-- Form state -> `form-builder-agent`
-- Database state -> `sql-query-agent`
-- Test generation -> `unit-test-agent`
+| Request | Redirect To |
+|---------|-------------|
+| UI component generation | `component-generator-agent` |
+| API client and data fetching | `api-client-agent` |
+| Form state management | `form-builder-agent` |
+| Database state and queries | `sql-query-agent` |
+| Test generation | `unit-test-agent` |
