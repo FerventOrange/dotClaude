@@ -26,6 +26,9 @@ CATEGORY_COLORS[documentation]=$YELLOW
 CATEGORY_COLORS[code]=$RED
 CATEGORY_COLORS[testing]=$GREEN
 CATEGORY_COLORS[infrastructure]=$MAGENTA
+CATEGORY_COLORS[backend]=$CYAN
+CATEGORY_COLORS[data]=$GREEN
+CATEGORY_COLORS[frontend]=$YELLOW
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

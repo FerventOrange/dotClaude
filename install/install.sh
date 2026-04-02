@@ -2,7 +2,7 @@
 # dotClaude Install Script
 # Installs Claude Code (if needed) and configures agent awareness
 #
-# Usage: ./install/install.sh [--skip-claude-install]
+# Usage: ./install/install.sh [--skip-claude-install] [--level user|project|both] [--project-path /path/to/project]
 
 set -e
 
@@ -26,18 +26,36 @@ echo ""
 
 # Parse arguments
 SKIP_CLAUDE_INSTALL=false
+INSTALL_LEVEL=""
+PROJECT_PATH=""
 for arg in "$@"; do
     case $arg in
         --skip-claude-install)
             SKIP_CLAUDE_INSTALL=true
             ;;
+        --level)
+            shift_next=true
+            ;;
+        --project-path)
+            shift_next_project=true
+            ;;
+        *)
+            if [ "$shift_next" = true ]; then
+                INSTALL_LEVEL="$arg"
+                shift_next=false
+            elif [ "$shift_next_project" = true ]; then
+                PROJECT_PATH="$arg"
+                shift_next_project=false
+            fi
+            ;;
     esac
 done
 
-# Detect OS (Linux and Windows/WSL supported)
+# Detect OS (Linux, macOS, and Windows/WSL supported)
 detect_os() {
     case "$(uname -s)" in
         Linux*)     OS="linux";;
+        Darwin*)    OS="macos";;
         MINGW*|MSYS*|CYGWIN*) OS="windows";;
         *)          OS="unknown";;
     esac
@@ -62,7 +80,7 @@ install_claude_code() {
     echo -e "${YELLOW}Installing Claude Code...${NC}"
 
     case $OS in
-        linux)
+        linux|macos)
             if command -v npm &> /dev/null; then
                 echo "Using npm to install Claude Code..."
                 npm install -g @anthropic-ai/claude-code
@@ -76,8 +94,12 @@ install_claude_code() {
             else
                 echo -e "${RED}npm not found. Please install Node.js first:${NC}"
                 echo "  - Visit: https://nodejs.org/"
-                echo "  - Ubuntu/Debian: sudo apt install nodejs npm"
-                echo "  - Fedora: sudo dnf install nodejs npm"
+                if [ "$OS" = "macos" ]; then
+                    echo "  - macOS: brew install node"
+                else
+                    echo "  - Ubuntu/Debian: sudo apt install nodejs npm"
+                    echo "  - Fedora: sudo dnf install nodejs npm"
+                fi
                 echo ""
                 echo "After installing Node.js, run this script again."
                 exit 1
@@ -93,7 +115,7 @@ install_claude_code() {
             exit 1
             ;;
         *)
-            echo -e "${RED}Unsupported OS. This script supports Linux and Windows.${NC}"
+            echo -e "${RED}Unsupported OS. This script supports Linux, macOS, and Windows.${NC}"
             exit 1
             ;;
     esac
@@ -113,7 +135,7 @@ install_gh_cli() {
     echo -e "${YELLOW}Installing GitHub CLI...${NC}"
 
     case $OS in
-        linux)
+        linux|macos)
             if command -v apt-get &> /dev/null; then
                 echo "Using apt to install GitHub CLI..."
                 (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
@@ -147,16 +169,67 @@ install_gh_cli() {
     esac
 }
 
-# Configure agent awareness
-configure_agent_awareness() {
-    echo -e "${YELLOW}Configuring agent awareness...${NC}"
+# Prompt for installation level
+prompt_install_level() {
+    if [ -n "$INSTALL_LEVEL" ]; then
+        return
+    fi
+
+    echo -e "${BLUE}Select installation level:${NC}"
+    echo "  1) User-level only    (~/.claude/CLAUDE.md + ~/.claude/agents/)"
+    echo "  2) Project-level only (<project>/.claude/CLAUDE.md + .claude/agents/ + .gitignore)"
+    echo "  3) Both               (user-level + project-level)"
+    echo ""
+    read -p "Choice [1/2/3] (default: 1): " choice
+
+    case $choice in
+        2) INSTALL_LEVEL="project" ;;
+        3) INSTALL_LEVEL="both" ;;
+        *) INSTALL_LEVEL="user" ;;
+    esac
+}
+
+# Prompt for project path and validate
+prompt_project_path() {
+    if [ -n "$PROJECT_PATH" ]; then
+        # Resolve to absolute path
+        PROJECT_PATH="$(cd "$PROJECT_PATH" 2>/dev/null && pwd)" || {
+            echo -e "${RED}[X] Directory does not exist: $PROJECT_PATH${NC}"
+            exit 1
+        }
+    else
+        read -p "Enter project root path: " PROJECT_PATH
+        if [ -z "$PROJECT_PATH" ]; then
+            echo -e "${RED}[X] No path provided.${NC}"
+            exit 1
+        fi
+        # Resolve to absolute path
+        PROJECT_PATH="$(cd "$PROJECT_PATH" 2>/dev/null && pwd)" || {
+            echo -e "${RED}[X] Directory does not exist: $PROJECT_PATH${NC}"
+            exit 1
+        }
+    fi
+
+    # Validate it's a git repo
+    if [ ! -d "$PROJECT_PATH/.git" ]; then
+        echo -e "${RED}[X] Not a git repository: $PROJECT_PATH${NC}"
+        echo "    No .git directory found. Project-level install requires a git repository."
+        exit 1
+    fi
+
+    echo -e "${GREEN}[OK]${NC} Valid git repository: $PROJECT_PATH"
+}
+
+# Configure agent awareness at user level
+configure_agent_awareness_user() {
+    echo -e "${YELLOW}Configuring user-level agent awareness...${NC}"
 
     # Create config directory
     mkdir -p "$CLAUDE_CONFIG_DIR"
 
     # Check if custom instructions already exist
     if [ -f "$CUSTOM_INSTRUCTIONS_FILE" ]; then
-        echo -e "${YELLOW}Existing custom instructions found.${NC}"
+        echo -e "${YELLOW}Existing custom instructions found at $CUSTOM_INSTRUCTIONS_FILE${NC}"
         read -p "Overwrite? (y/n): " overwrite
         if [ "$overwrite" != "y" ]; then
             echo "Keeping existing instructions."
@@ -170,18 +243,82 @@ configure_agent_awareness() {
     # Copy custom instructions
     if [ -f "$DOTCLAUDE_DIR/install/custom-instructions.md" ]; then
         cp "$DOTCLAUDE_DIR/install/custom-instructions.md" "$CUSTOM_INSTRUCTIONS_FILE"
-        echo -e "${GREEN}[OK] Custom instructions installed${NC}"
+        echo -e "${GREEN}[OK] Custom instructions installed to $CUSTOM_INSTRUCTIONS_FILE${NC}"
     else
         echo -e "${RED}Warning: custom-instructions.md not found in install directory.${NC}"
     fi
 }
 
-# Install agents to ~/.claude/agents (from category folders)
+# Configure agent awareness at project level
+configure_agent_awareness_project() {
+    echo -e "${YELLOW}Configuring project-level agent awareness...${NC}"
+
+    local project_claude_dir="$PROJECT_PATH/.claude"
+    local project_claude_md="$project_claude_dir/CLAUDE.md"
+
+    # Create .claude directory
+    mkdir -p "$project_claude_dir"
+
+    # Check if CLAUDE.md already exists in project
+    if [ -f "$project_claude_md" ]; then
+        echo -e "${YELLOW}Existing CLAUDE.md found at $project_claude_md${NC}"
+        read -p "Overwrite? (y/n): " overwrite
+        if [ "$overwrite" != "y" ]; then
+            echo "Keeping existing project CLAUDE.md."
+            # Still update .gitignore
+            update_gitignore
+            return
+        fi
+        # Backup existing
+        cp "$project_claude_md" "$project_claude_md.backup.$(date +%Y%m%d%H%M%S)"
+        echo "Backup created."
+    fi
+
+    # Copy custom instructions to project .claude/ directory
+    if [ -f "$DOTCLAUDE_DIR/install/custom-instructions.md" ]; then
+        cp "$DOTCLAUDE_DIR/install/custom-instructions.md" "$project_claude_md"
+        echo -e "${GREEN}[OK] Custom instructions installed to $project_claude_md${NC}"
+    else
+        echo -e "${RED}Warning: custom-instructions.md not found in install directory.${NC}"
+    fi
+
+    # Update .gitignore
+    update_gitignore
+}
+
+# Add .claude/ to .gitignore
+update_gitignore() {
+    local gitignore_file="$PROJECT_PATH/.gitignore"
+    local entry=".claude/"
+
+    if [ -f "$gitignore_file" ]; then
+        # Check if entry already exists
+        if grep -qxF "$entry" "$gitignore_file" 2>/dev/null; then
+            echo -e "${GREEN}[OK]${NC} .claude/ already in .gitignore"
+            return
+        fi
+        # Append entry
+        echo "" >> "$gitignore_file"
+        echo "# dotClaude - project-level Claude Code configuration" >> "$gitignore_file"
+        echo "$entry" >> "$gitignore_file"
+        echo -e "${GREEN}[OK]${NC} Added .claude/ to existing .gitignore"
+    else
+        # Create .gitignore with entry
+        echo "# dotClaude - project-level Claude Code configuration" > "$gitignore_file"
+        echo "$entry" >> "$gitignore_file"
+        echo -e "${GREEN}[OK]${NC} Created .gitignore with .claude/ entry"
+    fi
+}
+
+# Install agents to a target directory (from category folders)
+# Usage: install_agents <target_dir> <label>
 install_agents() {
-    echo -e "${YELLOW}Installing agents...${NC}"
+    local target_dir="$1"
+    local label="$2"
+    echo -e "${YELLOW}Installing agents ($label)...${NC}"
 
     # Create agents directory
-    mkdir -p "$AGENTS_INSTALL_DIR"
+    mkdir -p "$target_dir"
 
     # Source agents directory
     SOURCE_AGENTS_DIR="$DOTCLAUDE_DIR/agents"
@@ -193,7 +330,7 @@ install_agents() {
 
     installed_count=0
 
-    # Iterate through category directories (github, documentation, code, etc.)
+    # Iterate through category directories (github, documentation, code, frontend, backend, data, testing, infrastructure)
     for category_dir in "$SOURCE_AGENTS_DIR"/*/; do
         if [ -d "$category_dir" ]; then
             category_name=$(basename "$category_dir")
@@ -202,7 +339,7 @@ install_agents() {
             for agent_dir in "$category_dir"/*/; do
                 if [ -d "$agent_dir" ] && [ -f "$agent_dir/instructions.md" ]; then
                     agent_name=$(basename "$agent_dir")
-                    dest_agent_dir="$AGENTS_INSTALL_DIR/$agent_name"
+                    dest_agent_dir="$target_dir/$agent_name"
 
                     # Copy/update agent
                     rm -rf "$dest_agent_dir"
@@ -214,7 +351,7 @@ install_agents() {
         fi
     done
 
-    echo -e "${GREEN}[OK] $installed_count agent(s) installed${NC}"
+    echo -e "${GREEN}[OK] $installed_count agent(s) installed to $target_dir${NC}"
 }
 
 
@@ -242,26 +379,56 @@ verify_installation() {
         echo -e "${YELLOW}[!]${NC} GitHub CLI not found (optional, needed for PR workflows)"
     fi
 
-    # Check custom instructions
-    if [ -f "$CUSTOM_INSTRUCTIONS_FILE" ]; then
-        echo -e "${GREEN}[OK]${NC} Custom instructions: $CUSTOM_INSTRUCTIONS_FILE"
-    else
-        echo -e "${RED}[X]${NC} Custom instructions not found"
+    # Check user-level custom instructions
+    if [ "$INSTALL_LEVEL" = "user" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        if [ -f "$CUSTOM_INSTRUCTIONS_FILE" ]; then
+            echo -e "${GREEN}[OK]${NC} User-level instructions: $CUSTOM_INSTRUCTIONS_FILE"
+        else
+            echo -e "${RED}[X]${NC} User-level instructions not found"
+        fi
     fi
 
-    # Check installed agents directory
-    if [ -d "$AGENTS_INSTALL_DIR" ]; then
-        AGENT_COUNT=$(find "$AGENTS_INSTALL_DIR" -maxdepth 1 -type d ! -name "agents" | wc -l)
-        echo -e "${GREEN}[OK]${NC} Agents directory: $AGENTS_INSTALL_DIR"
-        echo -e "${GREEN}[OK]${NC} Agents installed: $AGENT_COUNT"
-    else
-        echo -e "${RED}[X]${NC} Agents directory not found"
+    # Check project-level custom instructions
+    if [ "$INSTALL_LEVEL" = "project" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        if [ -f "$PROJECT_PATH/.claude/CLAUDE.md" ]; then
+            echo -e "${GREEN}[OK]${NC} Project-level instructions: $PROJECT_PATH/.claude/CLAUDE.md"
+        else
+            echo -e "${RED}[X]${NC} Project-level instructions not found"
+        fi
+        if [ -f "$PROJECT_PATH/.gitignore" ] && grep -qxF ".claude/" "$PROJECT_PATH/.gitignore" 2>/dev/null; then
+            echo -e "${GREEN}[OK]${NC} .claude/ in .gitignore"
+        else
+            echo -e "${YELLOW}[!]${NC} .claude/ not in .gitignore"
+        fi
     fi
 
-    # List agents
+    # Check installed agents directory (per level)
+    if [ "$INSTALL_LEVEL" = "user" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        if [ -d "$AGENTS_INSTALL_DIR" ]; then
+            AGENT_COUNT=$(find "$AGENTS_INSTALL_DIR" -maxdepth 1 -type d ! -name "agents" | wc -l)
+            echo -e "${GREEN}[OK]${NC} User agents directory: $AGENTS_INSTALL_DIR ($AGENT_COUNT agents)"
+        else
+            echo -e "${RED}[X]${NC} User agents directory not found"
+        fi
+    fi
+    if [ "$INSTALL_LEVEL" = "project" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        local project_agents_dir="$PROJECT_PATH/.claude/agents"
+        if [ -d "$project_agents_dir" ]; then
+            AGENT_COUNT=$(find "$project_agents_dir" -maxdepth 1 -type d ! -name "agents" | wc -l)
+            echo -e "${GREEN}[OK]${NC} Project agents directory: $project_agents_dir ($AGENT_COUNT agents)"
+        else
+            echo -e "${RED}[X]${NC} Project agents directory not found"
+        fi
+    fi
+
+    # List agents (show from whichever level was installed)
+    local list_dir="$AGENTS_INSTALL_DIR"
+    if [ "$INSTALL_LEVEL" = "project" ]; then
+        list_dir="$PROJECT_PATH/.claude/agents"
+    fi
     echo ""
     echo "Installed agents:"
-    for agent_dir in "$AGENTS_INSTALL_DIR"/*/; do
+    for agent_dir in "$list_dir"/*/; do
         if [ -d "$agent_dir" ]; then
             agent_name=$(basename "$agent_dir")
             echo "  - $agent_name"
@@ -295,17 +462,38 @@ main() {
     fi
     echo ""
 
-    # Step 3: Configure agent awareness
-    echo -e "${BLUE}Step 3: Agent Awareness Configuration${NC}"
-    configure_agent_awareness
+    # Step 3: Select installation level
+    echo -e "${BLUE}Step 3: Installation Level${NC}"
+    prompt_install_level
+    echo -e "${GREEN}[OK]${NC} Install level: $INSTALL_LEVEL"
+
+    # If project or both, get and validate project path
+    if [ "$INSTALL_LEVEL" = "project" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        prompt_project_path
+    fi
     echo ""
 
-    # Step 4: Install agents
-    echo -e "${BLUE}Step 4: Install Agents${NC}"
-    install_agents
+    # Step 4: Configure agent awareness
+    echo -e "${BLUE}Step 4: Agent Awareness Configuration${NC}"
+    if [ "$INSTALL_LEVEL" = "user" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        configure_agent_awareness_user
+    fi
+    if [ "$INSTALL_LEVEL" = "project" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        configure_agent_awareness_project
+    fi
     echo ""
 
-    # Step 5: Verify
+    # Step 5: Install agents to matching scope
+    echo -e "${BLUE}Step 5: Install Agents${NC}"
+    if [ "$INSTALL_LEVEL" = "user" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        install_agents "$AGENTS_INSTALL_DIR" "user-level"
+    fi
+    if [ "$INSTALL_LEVEL" = "project" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        install_agents "$PROJECT_PATH/.claude/agents" "project-level"
+    fi
+    echo ""
+
+    # Step 6: Verify
     verify_installation
 
     echo ""
@@ -314,12 +502,19 @@ main() {
     echo -e "${GREEN}================================================${NC}"
     echo ""
     echo "Installed to:"
-    echo "  - Custom instructions: $CUSTOM_INSTRUCTIONS_FILE"
-    echo "  - Agents directory: $AGENTS_INSTALL_DIR"
+    if [ "$INSTALL_LEVEL" = "user" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        echo "  - User instructions: $CUSTOM_INSTRUCTIONS_FILE"
+        echo "  - User agents: $AGENTS_INSTALL_DIR"
+    fi
+    if [ "$INSTALL_LEVEL" = "project" ] || [ "$INSTALL_LEVEL" = "both" ]; then
+        echo "  - Project instructions: $PROJECT_PATH/.claude/CLAUDE.md"
+        echo "  - Project agents: $PROJECT_PATH/.claude/agents"
+        echo "  - .gitignore updated: $PROJECT_PATH/.gitignore"
+    fi
     echo ""
     echo "Next steps:"
     echo "  1. Start Claude Code: claude"
-    echo "  2. Test agent awareness: Ask 'help me create a README'"
+    echo "  2. Test agent awareness: Ask 'help me create project documentation'"
     echo "  3. List agents: ./install/list-agents.sh"
     echo ""
 }

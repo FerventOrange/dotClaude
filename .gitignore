@@ -49,3 +49,6 @@ config/local/
 tmp/
 temp/
 *.tmp
+
+# dotClaude - project-level Claude Code configuration
+.claude/
