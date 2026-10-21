@@ -1,6 +1,6 @@
 # dotClaude install script for Windows
 # Installs prerequisites (Claude Code, GitHub CLI, Node >= 18), the orchestrator CLAUDE.md, agents/*.md,
-# skills/*, the guard hook + statusline, and merges settings/settings.json into settings.json.
+# skills/*, the guard and report-check hooks + statusline, and merges settings/settings.json into settings.json.
 #
 # Usage: .\install\install.ps1 [-SkipClaudeInstall] [-InstallLevel user|project|both]
 #                              [-ProjectPath C:\path\to\project] [-Force] [-DryRun] [-Uninstall]

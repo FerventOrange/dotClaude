@@ -1,7 +1,7 @@
 #!/bin/bash
 # dotClaude install script
 # Installs prerequisites (Claude Code, GitHub CLI, Node >= 18), the orchestrator CLAUDE.md, agents/*.md,
-# skills/*, the guard hook + statusline, and merges settings/settings.json into settings.json.
+# skills/*, the guard and report-check hooks + statusline, and merges settings/settings.json into settings.json.
 #
 # Usage: ./install/install.sh [--skip-claude-install] [--level user|project|both]
 #                             [--project-path /path/to/project] [--force] [--dry-run] [--uninstall]
@@ -273,7 +273,8 @@ remove_legacy_hook() {
 }
 
 # install_agents <cfg_dir>: copy agents/*.md into <cfg_dir>/agents via the helper
-# (backs up unmanaged, differing same-name agents to <cfg>/dotclaude/backups/)
+# (backs up unmanaged, differing same-name agents to <cfg>/dotclaude/backups/;
+# exact copies of released dotClaude agents are replaced without backup)
 install_agents() {
     helper agents --src "$DOTCLAUDE_DIR" --cfg "$1"
 }

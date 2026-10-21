@@ -12,6 +12,17 @@
           }
         ]
       }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<cfg>/dotclaude/report-check.js\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
