@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-10-21
+
 ### Added
 - Report-check hook (`hooks/report-check.js`, SubagentStop): blocks a dotClaude agent from stopping until its final message has `STATUS`, `SUMMARY`, `CHANGES`, and `FOLLOW_UPS` (plus `VERDICT` for `review-agent`); `NEEDS_CLARIFICATION` requires only `STATUS` and `QUESTIONS`. Blocks once, then allows; fails open; `DOTCLAUDE_REPORT_CHECK=off` disables it
 
 ### Changed
 - Guard simplified: it no longer analyzes commands wrapped in `bash -c`, `cmd /c`, `iex` / `Invoke-Expression`, or `Push-Location`, and no longer honors `git --git-dir`. It is a mistake-catcher for Claude's own commands, not a security boundary
-- Test suite trimmed to tests covering valuable logic (307 to 168 tests)
+- Test suite trimmed to tests covering valuable logic (307 to 177 tests)
 - Agents encode useful-tests-only and YAGNI: `implement-agent` avoids speculative handling and `review-agent` flags missing tests for valuable new logic
 - Installer adopts only agents that exactly match a released dotClaude version (content hash in `install/lib/known-releases.json`), replacing them without a backup and removing stale backups of such copies; skills are never adopted, and any same-name user skill is backed up
 
