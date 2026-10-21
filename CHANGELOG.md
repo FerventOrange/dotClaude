@@ -7,11 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+**BREAKING (3.0.0):** The 42-agent roster is replaced by 8 agents with new names and a new file format. Old agent names (for example `git-commit-agent`, `documentation-agent`) no longer exist. Re-run the installer to migrate.
+
+### Added
+- `CONTRIBUTING.md` with the agent file format, required sections, and PR process
+- Installers migrate legacy dotClaude v2 agents: per-directory agents are detected and removed after confirmation
+- Installers remove the orphaned `~/.claude/hooks/block-git-commands.js` left by earlier versions, after confirmation and only when settings.json no longer references it.
+- Installers honor the `CLAUDE_CONFIG_DIR` environment variable for user scope
+- `LICENSE` file (MIT)
+
+### Changed
+- Consolidated 42 agents into 8:
+  - **git-agent** - git-commit, git-pr, git-sync, git-tags, git-issues, gitops
+  - **review-agent** - code-review, security-review, pr-review, accessibility, dependency, code-cleanup
+  - **implement-agent** - python, component-generator, form-builder, route-generator, state-management, api-endpoint, auth, seed-data, api-client, validation-schema, sql-query, sql-schema, sql-migration
+  - **test-agent** - unit-test, integration-test
+  - **debug-agent** - debug
+  - **docs-agent** - documentation, changelog, api-doc, doc-review
+  - **infra-agent** - docker, cicd, deployment, terraform, env-config, code-linting
+  - **agent-manager** - agent-creator, agent-updater, agent-review-agent, dotclaude-updater
+- Agents are now flat files (`agents/<name>.md`) with real Claude Code subagent frontmatter (`name`, `description`, `tools`, `model`, `color`) instead of `agents/<category>/<name>/instructions.md`
+- Agents may branch, commit, push feature branches, open PRs, and post reviews; merging to main always requires explicit user approval
+- Recursive review loop: review, fix only the listed findings, re-review, up to 3 cycles before escalating to the user
+- Clarification protocol: agents stop and return `NEEDS_CLARIFICATION` when confidence is below 80% or the request is ambiguous or contradictory
+- All agents end with a standard `STATUS / SUMMARY / CHANGES / FOLLOW_UPS` report; out-of-scope issues are reported, not fixed
+- Installers support `--force` / `-Force` to answer yes to every confirmation prompt
+- `install/custom-instructions.md` rewritten as the orchestrator workflow contract (installed as `CLAUDE.md`)
+- `list-agents` scripts read flat `agents/*.md` frontmatter
+- README rewritten around the 8-agent roster and workflow
+
+### Removed
+- `install/agent-awareness.md`
+- `docs/roadmap.md`, `docs/project-goals.md`, `docs/README.md`
+- `docs/agent-guidelines.md` (replaced by `CONTRIBUTING.md`)
+- Agent category directories (`agents/github/`, `agents/code/`, `agents/frontend/`, etc.)
+- `install/.gitkeep`
+
+## [2.0.0] - 2026-04-02
+
 ### Changed
 - Upgraded **agent-creator**, **agent-updater**, and **agent-review-agent** to v2.0.0 with canonical agent template, batch operation support, cross-agent consistency enforcement, and overlap detection
 - Upgraded documentation agents (**changelog-agent**, **doc-review-agent**, **api-doc-agent**) to v2.0.0 with canonical template
 - Renamed **readme-agent** to **documentation-agent** with broadened scope (now generates all project docs: README, CONTRIBUTING, ARCHITECTURE, guides, CODE_OF_CONDUCT, LICENSE)
 - Updated all cross-references from readme-agent to documentation-agent across 14+ files
+- Added required context and examples sections to frontend agent instructions
+- Added required context and examples sections to backend agent instructions
+- Added required context and examples sections to infra agent instructions
+- Expanded agent usage guidelines with delegation and review rules
 
 ### Added
 - **Frontend agent cluster** with 4 new agents (PR #6):
@@ -38,12 +80,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Agent retry rule to prevent root-level fallback when subagents fail (PR #10)
 - Git command enforcement hooks to install scripts (PR #5, #11)
 - Hook to block `gh pr edit` title/body modifications outside pr-agent
-
-### Changed
-- Added required context and examples sections to frontend agent instructions
-- Added required context and examples sections to backend agent instructions
-- Added required context and examples sections to infra agent instructions
-- Expanded agent usage guidelines with delegation and review rules
 
 ### Fixed
 - Hardened block-git-commands hook against bypass and resource abuse
@@ -157,11 +193,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Legacy `git-commit-helper` agent directory (consolidated into git-commit-agent)
 - Redundant per-agent files: agent.json, README.md, mcp-requirements.txt, examples/
 - Empty placeholder directories (config/, examples/, tests/)
-
----
-
-[Unreleased]: https://github.com/FerventOrange/dotClaude/compare/v0.4.0...HEAD
-[0.4.0]: https://github.com/FerventOrange/dotClaude/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/FerventOrange/dotClaude/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/FerventOrange/dotClaude/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/FerventOrange/dotClaude/releases/tag/v0.1.0

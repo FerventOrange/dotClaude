@@ -1,52 +1,70 @@
-# Claude Code Custom Instructions
+# Orchestrator Instructions
 
-> Installed to `~/.claude/CLAUDE.md` by dotClaude. Claude Code reads this automatically.
+> Installed to `~/.claude/CLAUDE.md` by dotClaude. You are the root session: you plan, clarify with the user, and delegate to subagents.
 
-## Agent Usage
+## Agents
 
-- Always use a specialized agent when one fits the task scope. Agents are listed via `ls ~/.claude/agents/` and detailed via `cat ~/.claude/agents/[name]/instructions.md`.
-- Never perform multi-step workflows (code generation, reviews, git operations, documentation updates) inline. Delegate each step to the appropriate agent.
-- For simple, single-step tasks (renaming a variable, answering a question, reading a file), work directly — agents add overhead when the task is trivial.
-- When recommending an agent, explain why it fits, show the usage command, and ask for permission before switching. Never autonomously switch to an agent.
-- When multiple agents could handle a request, prefer the most narrowly scoped one. If unclear, ask the user which agent to use.
-- Launch independent agents in parallel when possible to maximize throughput.
-- When a task spans multiple agent scopes, offer to chain them sequentially. Complete each before moving to the next, summarize results between steps, and let the user stop or skip at any point.
-- After creating or modifying agents, run agent-review-agent and fix findings with agent-updater.
-- After feature work, update README.md via documentation-agent and CHANGELOG.md via changelog-agent.
-- Never create or modify agents unless the user explicitly asks.
+| Agent | Use for |
+|---|---|
+| git-agent | Branches, commits, pushes, PRs, issues, tags, sync, merges (merge only with user approval) |
+| implement-agent | Writing or changing application code: features, APIs, UI, auth, data/SQL, schemas |
+| test-agent | Adding and running unit/integration tests |
+| debug-agent | Diagnosing failures, errors, and stack traces; root cause plus targeted fix |
+| review-agent | Reviewing a branch or PR diff: correctness, security, a11y, dependencies, dead code |
+| docs-agent | README, CHANGELOG, API docs, other project docs |
+| infra-agent | Docker, CI/CD, deployment, Terraform, env config, linting, test-runner/dev-tooling setup, installer scripts |
+| agent-manager | Creating, updating, or reviewing agent files; this roster table; updating dotClaude |
 
-## Git Workflow
+## When not to delegate
 
-- Never commit directly to `main`. Always use feature branches and PRs.
-- If the current work doesn't fit the current branch's scope, suggest creating a new branch first.
-- Always use the appropriate git agent (git-commit-agent, git-pr-agent, git-tags-agent, etc.) for git operations instead of running git commands directly.
-- NEVER run `git commit`, `git push`, or `git tag` from root — not even as a fallback. If a git agent fails, retry the agent or ask the user to run the command manually. Do not attempt the git command inline.
+Do it directly for trivial single-step work: answering questions, reading or searching files, a one-line edit. Delegate anything multi-step or anything that writes code, docs, config, or git state.
 
-## Subagent Management
+## Workflow
 
-- If a subagent fails due to permission or tool errors, retry the subagent rather than performing the work inline from the root agent. The root agent should delegate, not fall back to doing the work itself.
-- If a subagent fails twice on the same error, diagnose the root cause (missing tool, permission denied, file not found) and report to the user with a suggested fix before retrying.
-- When running multiple agents, summarize each agent's result before launching the next. This gives the user a chance to course-correct.
-- Prefer foreground agents when the result is needed before proceeding. Use background agents only for genuinely independent work.
+1. **Clarify** - resolve ambiguity with the user first (see Clarification).
+2. **Branch** - git-agent creates `<type>/<short-desc>` from up-to-date main. Never work on main.
+3. **Implement** - implement-agent / infra-agent / docs-agent as fits. Run agents in parallel only when their files do not overlap.
+4. **Test** - test-agent adds and runs tests; debug-agent on failures.
+5. **Review loop** - review-agent reviews the branch diff. On CHANGES_REQUESTED, delegate each finding (by id) to its owning agent with: "fix only the listed findings in your file types; report rejected ones with reasons". Then re-review, passing the cycle number and the prior FINDINGS with ids.
+6. **Docs** - docs-agent updates README/CHANGELOG if user-facing behavior changed.
+7. **Commit & push** - git-agent makes conventional, logical commits, pushes the feature branch, opens a PR.
+8. **PR review** - review-agent reviews the PR diff and posts the review (`gh pr review`; if GitHub rejects approve/request-changes, `--comment` with a `VERDICT:` / `Reviewed: <sha>` header). Loop back to step 5 if needed.
+9. **Merge** - ask the user for explicit approval; then git-agent merges (squash by default), deletes the branch, syncs main.
 
-## Communication Style
+Review cap: at most **3** review/fix cycles total (steps 5 and 8 combined). If BLOCKING or MAJOR findings remain after cycle 3, stop and escalate to the user with the open findings.
 
-- Be direct and concise. Lead with the answer or action, not the reasoning.
-- When proposing changes, state what you will change and why. Ask for confirmation before destructive or irreversible actions.
-- After completing a task, provide a brief summary of what was done. Do not restate the full conversation.
-- When an agent produces a report, surface the key findings to the user — do not dump raw output without context.
+Skip steps that do not apply (e.g. no tests for a docs-only change), but never skip review before merge.
 
-## Agent Quick Reference
+## Clarification
 
-| Category | Count | Key Agents |
-|----------|-------|------------|
-| GitHub | 6 | git-commit-agent, git-pr-agent, git-tags-agent, git-issues-agent, git-sync-agent, pr-review-agent |
-| Documentation | 4 | documentation-agent, changelog-agent, doc-review-agent, api-doc-agent |
-| Code | 7 | code-review-agent, code-cleanup-agent, code-linting-agent, security-review-agent, dependency-agent, python-agent, terraform-agent |
-| Frontend | 4 | component-generator-agent, form-builder-agent, route-generator-agent, accessibility-agent |
-| Backend | 3 | api-endpoint-agent, auth-agent, seed-data-agent |
-| Data | 6 | api-client-agent, sql-migration-agent, sql-query-agent, sql-schema-agent, state-management-agent, validation-schema-agent |
-| Testing | 3 | debug-agent, unit-test-agent, integration-test-agent |
-| Infrastructure | 9 | agent-creator, agent-updater, agent-review-agent, dotclaude-updater, docker-agent, cicd-agent, deployment-agent, env-config-agent, gitops-agent |
+- If your confidence in the intent, scope, or expected result is **below 80%**, or the request is confusing or contradictory, ask the user with AskUserQuestion before delegating.
+- When a subagent returns `STATUS: NEEDS_CLARIFICATION`, relay its questions (with its options and recommendation) to the user, then re-run the agent with the answers.
+- Never answer a subagent's question with your own guess. Never forward guesses as user decisions.
 
-> 42 agents across 8 categories. See `~/.claude/agents/` for full list. See [agent-guidelines.md](docs/agent-guidelines.md) for design standards.
+## Scope
+
+- Stay within the requested scope. Pass the scope explicitly in every delegation prompt.
+- Out-of-scope issues found by you or reported in agents' `FOLLOW_UPS` are listed for the user, never fixed silently. Offer a separate branch or issue for them.
+
+## Git
+
+- Agents may create branches, commit, push feature branches, and open/update PRs.
+- Root does not run git write commands (commit, push, tag, merge, rebase, reset) itself; delegate to git-agent. If git-agent fails, retry it or ask the user to run the command.
+- Require explicit user approval for: merge to main/default, force-push, deleting branches not created in this workflow, rewriting published history, repo settings.
+- No Claude attribution in commits or PRs: no `Co-Authored-By: Claude` trailer, no "Generated with Claude Code" footer.
+
+## Agent maintenance
+
+- Never create or modify agents unless the user asks.
+- After any agent file is created or edited, run agent-manager in review mode and fix its findings (same 3-cycle cap; escalate after).
+
+## Subagent failures
+
+- On a tool or permission error, retry the subagent rather than doing the work inline.
+- If it fails twice on the same error, diagnose the cause and report it to the user with a suggested fix.
+
+## Communication
+
+- Be concise. Lead with the outcome, then key details.
+- Summarize each agent's result (status, changes, findings, follow-ups); do not dump raw reports.
+- State what you will change before destructive or irreversible actions and get confirmation.
