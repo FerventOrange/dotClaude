@@ -1,16 +1,21 @@
 # dotClaude install script for Windows
-# Installs prerequisites (Claude Code, GitHub CLI), the orchestrator CLAUDE.md, and agents/*.md.
+# Installs prerequisites (Claude Code, GitHub CLI, Node >= 18), the orchestrator CLAUDE.md, agents/*.md,
+# skills/*, the guard hook + statusline, and merges settings/settings.json into settings.json.
 #
 # Usage: .\install\install.ps1 [-SkipClaudeInstall] [-InstallLevel user|project|both]
-#                              [-ProjectPath C:\path\to\project] [-Force]
-#   -Force  answer "yes" to all confirmations (overwrite CLAUDE.md with backup, remove legacy files)
+#                              [-ProjectPath C:\path\to\project] [-Force] [-DryRun] [-Uninstall]
+#   -Force      answer "yes" to all confirmations; also replaces a custom statusLine
+#   -DryRun     print every action without writing anything
+#   -Uninstall  remove only dotClaude-owned items (hook, statusline, permissions, skills, agents, CLAUDE.md)
 
 param(
     [switch]$SkipClaudeInstall,
     [ValidateSet("user", "project", "both")]
     [string]$InstallLevel = "",
     [string]$ProjectPath = "",
-    [switch]$Force
+    [switch]$Force,
+    [switch]$DryRun,
+    [switch]$Uninstall
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,6 +23,9 @@ $ErrorActionPreference = "Stop"
 $DotClaudeDir = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $SourceInstructions = Join-Path $DotClaudeDir "install\custom-instructions.md"
 $SourceAgentsDir = Join-Path $DotClaudeDir "agents"
+$SourceSettings = Join-Path $DotClaudeDir "settings\settings.json"
+$SourceProjectTemplate = Join-Path $DotClaudeDir "templates\project-CLAUDE.md"
+$Helper = Join-Path $DotClaudeDir "install\lib\settings-merge.js"
 $ClaudeConfigDir = if ($env:CLAUDE_CONFIG_DIR) { $env:CLAUDE_CONFIG_DIR } else { Join-Path $env:USERPROFILE ".claude" }
 $UserClaudeMd = Join-Path $ClaudeConfigDir "CLAUDE.md"
 $UserAgentsDir = Join-Path $ClaudeConfigDir "agents"
@@ -45,9 +53,35 @@ function Write-Step { param([string]$Text) Write-Host $Text -ForegroundColor Blu
 # Returns $true on yes. -Force answers yes.
 function Confirm-Action {
     param([string]$Prompt)
-    if ($Force) { return $true }
+    if ($Force -or $DryRun) { return $true }
     $answer = Read-Host "$Prompt [y/N]"
     return ($answer -eq "y" -or $answer -eq "Y")
+}
+
+# In dry-run mode print the action and return $true (caller should skip the write)
+function Skip-DryRun {
+    param([string]$Text)
+    if (-not $DryRun) { return $false }
+    Write-Host "[dry-run] $Text" -ForegroundColor Yellow
+    return $true
+}
+
+# Shared Node helper (merge/unmerge/copy/remove/is-ours)
+function Invoke-Helper {
+    $extra = @()
+    if ($DryRun) { $extra = @("--dry-run") }
+    & node $Helper @args @extra
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
+function Test-Node {
+    $major = 0
+    if (Test-Command node) { $major = [int](& node -p "process.versions.node.split('.')[0]") }
+    if ($major -lt 18) {
+        Write-Err "Node.js >= 18 is required (hooks, statusline and settings merge run on it). Install from https://nodejs.org/ (winget install OpenJS.NodeJS) and re-run."
+        exit 1
+    }
+    Write-Ok "Node.js $(& node --version)"
 }
 
 function Test-Command {
@@ -60,7 +94,21 @@ function Get-ToolVersion {
     try { return (& $Name --version 2>$null | Select-Object -First 1) } catch { return "installed" }
 }
 
-function Test-WantsUser    { return ($script:InstallLevel -eq "user" -or $script:InstallLevel -eq "both") }
+# Hook "onFailure" needs Claude Code >= 2.1.295; omit it for older versions (skipped if claude is absent)
+$script:OnFailureOk = $true
+$MinOnFailureVersion = "2.1.295"
+function Test-OnFailureSupport {
+    if (-not (Test-Command claude)) { return }
+    $m = [regex]::Match([string](Get-ToolVersion claude), '\d+\.\d+\.\d+')
+    if (-not $m.Success) { return }
+    & node $Helper version-lt $m.Value $MinOnFailureVersion
+    if ($LASTEXITCODE -eq 0) {
+        $script:OnFailureOk = $false
+        Write-Warn "Claude Code $($m.Value) is older than ${MinOnFailureVersion}: installing the guard hook without onFailure (a hook crash will not block). Upgrade Claude Code and re-run to enable it."
+    }
+}
+
+function Test-WantsUser   { return ($script:InstallLevel -eq "user" -or $script:InstallLevel -eq "both") }
 function Test-WantsProject { return ($script:InstallLevel -eq "project" -or $script:InstallLevel -eq "both") }
 
 function Install-ClaudeCode {
@@ -124,16 +172,18 @@ function Resolve-ProjectPath {
 function Install-ClaudeMd {
     param([string]$Destination)
     if (-not (Test-Path $SourceInstructions)) { Write-Err "Missing $SourceInstructions"; return }
-    New-Item -ItemType Directory -Path (Split-Path -Parent $Destination) -Force | Out-Null
     if (Test-Path $Destination) {
         if (-not (Confirm-Action "Existing $Destination found. Overwrite (a backup is kept)?")) {
             Write-Host "Keeping existing $Destination"
             return
         }
+        if (Skip-DryRun "back up and overwrite $Destination") { return }
         $backup = "$Destination.backup.$(Get-Date -Format 'yyyyMMddHHmmss')"
         Copy-Item $Destination $backup
         Write-Host "Backup created: $backup"
     }
+    if (Skip-DryRun "write $Destination") { return }
+    New-Item -ItemType Directory -Path (Split-Path -Parent $Destination) -Force | Out-Null
     Copy-Item $SourceInstructions $Destination -Force
     Write-Ok "Instructions installed to $Destination"
 }
@@ -144,6 +194,7 @@ function Update-Gitignore {
         Write-Ok ".claude/ already in .gitignore"
         return
     }
+    if (Skip-DryRun "add .claude/ to $file") { return }
     Add-Content -Path $file -Value "`n# dotClaude - project-level Claude Code configuration`n.claude/" -Encoding ascii
     Write-Ok "Added .claude/ to $file"
 }
@@ -171,6 +222,7 @@ function Remove-LegacyAgents {
     Write-Warn "Found $($legacy.Count) legacy agent director(ies) in ${AgentsDir}:"
     $legacy | ForEach-Object { Write-Host "  - $($_.Name)" }
     if (Confirm-Action "Remove them?") {
+        if (Skip-DryRun "remove $($legacy.Count) legacy agent director(ies)") { return }
         $legacy | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
         Write-Ok "Removed $($legacy.Count) legacy agent director(ies)"
     } else {
@@ -187,24 +239,55 @@ function Remove-LegacyHook {
     }
     Write-Warn "Orphaned legacy hook found: $LegacyHook"
     if (Confirm-Action "Remove it?") {
+        if (Skip-DryRun "remove $LegacyHook") { return }
         Remove-Item -Force $LegacyHook
         Write-Ok "Removed $LegacyHook"
     }
 }
 
+# Copy agents/*.md into <CfgDir>agents via the helper
+# (backs up unmanaged, differing same-name agents to <CfgDir>dotclaudeackups)
 function Install-Agents {
-    param([string]$TargetDir)
-    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
-    $agents = @(Get-ChildItem -Path $SourceAgentsDir -Filter "*.md" -File -ErrorAction SilentlyContinue)
-    if ($agents.Count -eq 0) {
-        Write-Warn "No agents found in $SourceAgentsDir"
-        return
+    param([string]$CfgDir)
+    Invoke-Helper agents --src $DotClaudeDir --cfg $CfgDir
+}
+
+# Hooks, statusline, skills, then merge settings.json
+function Install-Scope {
+    param([string]$CfgDir)
+    Invoke-Helper copy --src $DotClaudeDir --cfg $CfgDir
+    $force = @()
+    if ($Force) { $force = @("--force") }
+    if (-not $script:OnFailureOk) { $force += "--omit-on-failure" }
+    Invoke-Helper merge --template $SourceSettings --cfg $CfgDir @force
+}
+
+# Remove only dotClaude-owned items
+function Uninstall-Scope {
+    param([string]$CfgDir)
+    $md = Join-Path $CfgDir "CLAUDE.md"
+    Invoke-Helper unmerge --template $SourceSettings --cfg $CfgDir
+    Invoke-Helper remove --src $DotClaudeDir --cfg $CfgDir
+    & node $Helper is-ours $md
+    if ($LASTEXITCODE -eq 0) {
+        if ((Confirm-Action "Remove $md (dotClaude orchestrator instructions)?") -and -not (Skip-DryRun "remove $md")) {
+            Remove-Item -Force $md
+            Write-Ok "Removed $md"
+        }
+    } elseif (Test-Path $md) {
+        Write-Host "Keeping $md (not a dotClaude file)"
     }
-    foreach ($agent in $agents) {
-        Copy-Item $agent.FullName $TargetDir -Force
-        Write-Host "  Installed: $($agent.BaseName)"
-    }
-    Write-Ok "$($agents.Count) agent(s) installed to $TargetDir"
+}
+
+# <project>/CLAUDE.md, only if absent and confirmed
+function Install-ProjectTemplate {
+    $dest = Join-Path $script:ProjectPath "CLAUDE.md"
+    if (-not (Test-Path $SourceProjectTemplate)) { Write-Warn "Missing $SourceProjectTemplate"; return }
+    if (Test-Path $dest) { Write-Ok "$dest already exists; leaving it alone"; return }
+    if (-not (Confirm-Action "Create a project CLAUDE.md template at ${dest}?")) { return }
+    if (Skip-DryRun "write $dest") { return }
+    Copy-Item $SourceProjectTemplate $dest
+    Write-Ok "Project template written to $dest (fill in Commands, Conventions, Boundaries)"
 }
 
 function Test-Installation {
@@ -218,16 +301,36 @@ function Main {
     Write-Host "dotClaude installer" -ForegroundColor Blue
     Write-Host ""
 
+    if ($DryRun) { Write-Warn "Dry run: nothing will be written" }
     Write-Step "Step 1: Prerequisites"
-    if (Test-Command claude) {
-        Write-Ok "Claude Code already installed"
-    } elseif ($SkipClaudeInstall) {
-        Write-Warn "Skipping Claude Code installation (-SkipClaudeInstall)"
-    } else {
-        Install-ClaudeCode
+    Test-Node
+    if (-not $Uninstall) {
+        if (Test-Command claude) {
+            Write-Ok "Claude Code already installed"
+        } elseif ($SkipClaudeInstall) {
+            Write-Warn "Skipping Claude Code installation (-SkipClaudeInstall)"
+        } elseif (-not (Skip-DryRun "install Claude Code via npm")) {
+            Install-ClaudeCode
+        }
+        if (Test-Command gh) {
+            Write-Ok "GitHub CLI already installed"
+        } elseif (-not (Skip-DryRun "install GitHub CLI via winget")) {
+            Install-GhCli
+        }
     }
-    if (Test-Command gh) { Write-Ok "GitHub CLI already installed" } else { Install-GhCli }
+    if (-not $Uninstall) { Test-OnFailureSupport }
     Write-Host ""
+
+    if ($Uninstall) {
+        Write-Step "Uninstall: select level"
+        Select-InstallLevel
+        if (Test-WantsProject) { Resolve-ProjectPath }
+        if (Test-WantsUser) { Uninstall-Scope $ClaudeConfigDir }
+        if (Test-WantsProject) { Uninstall-Scope (Join-Path $script:ProjectPath ".claude") }
+        Write-Host ""
+        if ($DryRun) { Write-Ok "Dry run complete (nothing written)" } else { Write-Ok "Uninstall complete (a settings.json backup was kept if settings changed)." }
+        return
+    }
 
     Write-Step "Step 2: Installation level"
     Select-InstallLevel
@@ -252,12 +355,19 @@ function Main {
     Write-Host ""
 
     Write-Step "Step 5: Install agents"
-    if (Test-WantsUser) { Install-Agents $UserAgentsDir }
-    if (Test-WantsProject) { Install-Agents (Join-Path $projectClaude "agents") }
+    if (Test-WantsUser) { Install-Agents $ClaudeConfigDir }
+    if (Test-WantsProject) { Install-Agents $projectClaude }
+    Write-Host ""
+
+    Write-Step "Step 6: Hooks, statusline, skills, settings"
+    if (Test-WantsUser) { Install-Scope $ClaudeConfigDir }
+    if (Test-WantsProject) { Install-Scope $projectClaude; Install-ProjectTemplate }
 
     Test-Installation
     Write-Host ""
+    if ($DryRun) { Write-Ok "Dry run complete (nothing written)"; return }
     Write-Ok "Installation complete. Start Claude Code with 'claude'; list agents with .\install\list-agents.ps1"
 }
 
 Main
+exit 0
