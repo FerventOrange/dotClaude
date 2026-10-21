@@ -13,8 +13,25 @@ description: One line: what it does and when the orchestrator should use it. Rou
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet            # sonnet | opus | inherit
 color: blue              # blue | green | yellow | red | purple | orange | pink | cyan
+effort: medium           # optional: low | medium | high | xhigh | max
+maxTurns: 30             # optional: positive integer
 ---
 ```
+
+`effort` and `maxTurns` are optional. `scripts/validate.js` rejects any other key.
+
+## Skill File Format
+
+Each skill is `skills/<name>/SKILL.md`. Frontmatter needs `name` (must equal the directory name) and `description` (what it does and when to use it; routing depends on it). The body is the procedure the root orchestrator follows.
+
+```markdown
+---
+name: example
+description: What the skill does. Use when the user types /example or asks to ...
+---
+```
+
+Optional keys: `argument-hint`, `disable-model-invocation` (user-only skill, as in `/release` and `/sync-dotclaude`), and `allowed-tools`. The validator rejects any other key.
 
 ## Required Sections
 
@@ -71,6 +88,12 @@ Reviewing agents (`review-agent`, and `docs-agent` in review mode) additionally 
 
 ## Before Opening a PR
 
-1. Run `agent-manager` in review mode on every agent file you added or changed, and resolve all BLOCKING and MAJOR findings.
-2. Re-run the installer locally and confirm Claude Code lists the agent (`/agents`).
-3. Exercise the agent on a real task and check that it ends with the Output contract.
+1. Run the validator and the unit tests (Node.js 18+, no dependencies):
+   ```bash
+   node scripts/validate.js
+   node --test "hooks/*.test.js" "statusline/*.test.js"
+   ```
+   CI runs both on every PR.
+2. Run `agent-manager` in review mode on every agent file you added or changed, and resolve all BLOCKING and MAJOR findings.
+3. Re-run the installer locally (try `./install/install.sh --dry-run` first) and confirm Claude Code lists the agent (`/agents`).
+4. Exercise the agent on a real task and check that it ends with the Output contract.

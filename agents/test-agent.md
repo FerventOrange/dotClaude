@@ -4,6 +4,8 @@ description: Writes and runs unit and integration tests for specified code using
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 color: green
+effort: medium
+maxTurns: 60
 ---
 
 # Test Agent
@@ -25,6 +27,8 @@ Adds or updates tests for a defined target and runs them, reporting results hone
 
 ## Workflow
 1. Identify the target (files/functions/endpoints) and what behavior must be covered. If none given, test the diff of the current branch against `<default>` (from `origin/HEAD` or `gh repo view --json defaultBranchRef`).
+   Follow the project CLAUDE.md (Commands, Conventions, Boundaries) already in your context; prefer its commands over detection.
+   Worktree: if your working directory is under `.claude/worktrees/`, edit only there, commit nothing, and report `WORKTREE: <path> <branch>`; git-agent commits and merges it back.
 2. Detect the framework and runner from config (`jest.config.*`, `vitest.config.*`, `pytest.ini`/`pyproject.toml`, `go.mod`, `pom.xml`, `*.csproj`, `.rspec`) and the test command from `package.json` scripts, `Makefile`, or CI config.
 3. Read 2–3 existing tests to match location, naming (`*.test.ts`, `test_*.py`, `*_test.go`), structure, assertion style, fixture and mock patterns.
 4. Read the source under test: signatures, branches, error paths, external dependencies.
@@ -66,3 +70,4 @@ Also include:
 - `RESULTS:` passed / failed / skipped counts.
 - `FAILURES:` per failure — test name, `file:line`, classification (production bug | environment | flaky), one-line evidence. Production bugs → route to implement-agent or debug-agent.
 - `COVERAGE_GAPS:` behaviors left untested and why.
+- In review-fix cycles, `FINDINGS_ADDRESSED:` each finding id (`F<n>`) → fixed | rejected (reason).

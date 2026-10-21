@@ -1,10 +1,13 @@
 #!/bin/bash
 # dotClaude install script
-# Installs prerequisites (Claude Code, GitHub CLI), the orchestrator CLAUDE.md, and agents/*.md.
+# Installs prerequisites (Claude Code, GitHub CLI, Node >= 18), the orchestrator CLAUDE.md, agents/*.md,
+# skills/*, the guard hook + statusline, and merges settings/settings.json into settings.json.
 #
 # Usage: ./install/install.sh [--skip-claude-install] [--level user|project|both]
-#                             [--project-path /path/to/project] [--force]
-#   --force  answer "yes" to all confirmations (overwrite CLAUDE.md with backup, remove legacy files)
+#                             [--project-path /path/to/project] [--force] [--dry-run] [--uninstall]
+#   --force      answer "yes" to all confirmations; also replaces a custom statusLine
+#   --dry-run    print every action without writing anything
+#   --uninstall  remove only dotClaude-owned items (hook, statusline, permissions, skills, agents, CLAUDE.md)
 
 set -e
 
@@ -16,7 +19,9 @@ NC='\033[0m'
 
 DOTCLAUDE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE_INSTRUCTIONS="$DOTCLAUDE_DIR/install/custom-instructions.md"
-SOURCE_AGENTS_DIR="$DOTCLAUDE_DIR/agents"
+SOURCE_SETTINGS="$DOTCLAUDE_DIR/settings/settings.json"
+SOURCE_PROJECT_TEMPLATE="$DOTCLAUDE_DIR/templates/project-CLAUDE.md"
+HELPER="$DOTCLAUDE_DIR/install/lib/settings-merge.js"
 CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 USER_CLAUDE_MD="$CLAUDE_CONFIG_DIR/CLAUDE.md"
 USER_AGENTS_DIR="$CLAUDE_CONFIG_DIR/agents"
@@ -33,7 +38,11 @@ agent-updater cicd-agent deployment-agent docker-agent dotclaude-updater env-con
 debug-agent integration-test-agent unit-test-agent readme-agent"
 
 SKIP_CLAUDE_INSTALL=false
+ONFAILURE_OK=true   # hook "onFailure" needs Claude Code >= 2.1.295
+MIN_ONFAILURE_VERSION="2.1.295"
 FORCE=false
+DRY_RUN=false
+UNINSTALL=false
 INSTALL_LEVEL=""
 PROJECT_PATH=""
 
@@ -41,6 +50,8 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --skip-claude-install) SKIP_CLAUDE_INSTALL=true ;;
         --force) FORCE=true ;;
+        --dry-run) DRY_RUN=true ;;
+        --uninstall) UNINSTALL=true ;;
         --level|--project-path)
             if [ $# -lt 2 ] || [ -z "$2" ] || [ "${2#--}" != "$2" ]; then
                 echo -e "${RED}[X] $1 requires a value${NC}"; exit 1
@@ -64,10 +75,42 @@ step() { echo -e "${BLUE}$1${NC}"; }
 
 # confirm <prompt>: returns 0 on yes. --force answers yes.
 confirm() {
-    if [ "$FORCE" = true ]; then return 0; fi
+    if [ "$FORCE" = true ] || [ "$DRY_RUN" = true ]; then return 0; fi
     local answer
     read -r -p "$1 [y/N]: " answer
     [ "$answer" = "y" ] || [ "$answer" = "Y" ]
+}
+
+# dry <message>: in dry-run mode print the action and return 0 (caller should skip the write)
+dry() { [ "$DRY_RUN" = true ] || return 1; echo -e "${YELLOW}[dry-run]${NC} $1"; }
+
+# helper <subcommand> [args]: shared Node helper (merge/unmerge/copy/remove/is-ours)
+helper() {
+    local extra=()
+    [ "$DRY_RUN" = true ] && extra+=(--dry-run)
+    node "$HELPER" "$@" "${extra[@]}"
+}
+
+check_node() {
+    local major
+    major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null)" || major=""
+    if [ -z "$major" ] || [ "$major" -lt 18 ]; then
+        err "Node.js >= 18 is required (hooks, statusline and settings merge run on it). Install from https://nodejs.org/ and re-run."
+        exit 1
+    fi
+    ok "Node.js $(node --version)"
+}
+
+# check_onfailure: omit hook onFailure when the installed Claude Code is too old (skipped if claude is absent)
+check_onfailure() {
+    command -v claude &> /dev/null || return 0
+    local ver
+    ver="$(claude --version 2>/dev/null | grep -oE '[0-9]+[.][0-9]+[.][0-9]+' | head -1 || true)"
+    [ -n "$ver" ] || return 0
+    if node "$HELPER" version-lt "$ver" "$MIN_ONFAILURE_VERSION"; then
+        ONFAILURE_OK=false
+        warn "Claude Code $ver is older than $MIN_ONFAILURE_VERSION: installing the guard hook without onFailure (a hook crash will not block). Upgrade Claude Code and re-run to enable it."
+    fi
 }
 
 wants_user()    { [ "$INSTALL_LEVEL" = "user" ] || [ "$INSTALL_LEVEL" = "both" ]; }
@@ -150,17 +193,19 @@ resolve_project_path() {
 install_claude_md() {
     local dest="$1"
     [ -f "$SOURCE_INSTRUCTIONS" ] || { err "Missing $SOURCE_INSTRUCTIONS"; return; }
-    mkdir -p "$(dirname "$dest")"
     if [ -f "$dest" ]; then
         if ! confirm "Existing $dest found. Overwrite (a backup is kept)?"; then
             echo "Keeping existing $dest"
             return
         fi
+        dry "back up and overwrite $dest" && return
         local backup
         backup="$dest.backup.$(date +%Y%m%d%H%M%S)"
         cp "$dest" "$backup"
         echo "Backup created: $backup"
     fi
+    dry "write $dest" && return
+    mkdir -p "$(dirname "$dest")"
     cp "$SOURCE_INSTRUCTIONS" "$dest"
     ok "Instructions installed to $dest"
 }
@@ -171,6 +216,7 @@ update_gitignore() {
         ok ".claude/ already in .gitignore"
         return
     fi
+    dry "add .claude/ to $file" && return
     printf '\n# dotClaude - project-level Claude Code configuration\n.claude/\n' >> "$file"
     ok "Added .claude/ to $file"
 }
@@ -180,7 +226,9 @@ is_legacy_agent_dir() {
     local dir="$1" name
     name="$(basename "$dir")"
     [ -f "$dir/instructions.md" ] || return 1
-    case " $(echo $LEGACY_AGENTS) " in *" $name "*) return 0 ;; esac
+    local known
+    known=" $(printf '%s' "$LEGACY_AGENTS" | tr '\n' ' ') "
+    case "$known" in *" $name "*) return 0 ;; esac
     sed -n '2,/^---$/p' "$dir/instructions.md" | grep -qE '^(version|mcp_servers):'
 }
 
@@ -201,6 +249,7 @@ migrate_legacy_agents() {
     warn "Found ${#legacy[@]} legacy agent director(ies) in $agents_dir:"
     for dir in "${legacy[@]}"; do echo "  - $(basename "$dir")"; done
     if confirm "Remove them?"; then
+        dry "remove ${#legacy[@]} legacy agent director(ies)" && return 0
         for dir in "${legacy[@]}"; do rm -rf "$dir"; done
         ok "Removed ${#legacy[@]} legacy agent director(ies)"
     else
@@ -217,26 +266,16 @@ remove_legacy_hook() {
     fi
     warn "Orphaned legacy hook found: $LEGACY_HOOK"
     if confirm "Remove it?"; then
+        dry "remove $LEGACY_HOOK" && return 0
         rm -f "$LEGACY_HOOK"
         ok "Removed $LEGACY_HOOK"
     fi
 }
 
-# install_agents <target_dir>
+# install_agents <cfg_dir>: copy agents/*.md into <cfg_dir>/agents via the helper
+# (backs up unmanaged, differing same-name agents to <cfg>/dotclaude/backups/)
 install_agents() {
-    local target="$1" file count=0
-    mkdir -p "$target"
-    for file in "$SOURCE_AGENTS_DIR"/*.md; do
-        [ -f "$file" ] || continue
-        cp "$file" "$target/"
-        echo "  Installed: $(basename "$file" .md)"
-        count=$((count + 1))
-    done
-    if [ "$count" -eq 0 ]; then
-        warn "No agents found in $SOURCE_AGENTS_DIR"
-    else
-        ok "$count agent(s) installed to $target"
-    fi
+    helper agents --src "$DOTCLAUDE_DIR" --cfg "$1"
 }
 
 verify_installation() {
@@ -246,20 +285,76 @@ verify_installation() {
     if command -v gh &> /dev/null; then ok "GitHub CLI: $(gh --version 2>/dev/null | head -1)"; else warn "GitHub CLI not found (needed for PR workflows)"; fi
 }
 
+# install_scope <cfg_dir>: hooks, statusline, skills, then merge settings.json
+install_scope() {
+    helper copy --src "$DOTCLAUDE_DIR" --cfg "$1"
+    local force=()
+    [ "$FORCE" = true ] && force+=(--force)
+    [ "$ONFAILURE_OK" = true ] || force+=(--omit-on-failure)
+    helper merge --template "$SOURCE_SETTINGS" --cfg "$1" "${force[@]}"
+}
+
+# uninstall_scope <cfg_dir>: remove only dotClaude-owned items
+uninstall_scope() {
+    local cfg="$1" md="$1/CLAUDE.md"
+    helper unmerge --template "$SOURCE_SETTINGS" --cfg "$cfg"
+    helper remove --src "$DOTCLAUDE_DIR" --cfg "$cfg"
+    if node "$HELPER" is-ours "$md"; then
+        if confirm "Remove $md (dotClaude orchestrator instructions)?"; then
+            dry "remove $md" || { rm -f "$md"; ok "Removed $md"; }
+        fi
+    elif [ -f "$md" ]; then
+        echo "Keeping $md (not a dotClaude file)"
+    fi
+}
+
+# install_project_template: <project>/CLAUDE.md, only if absent and confirmed
+install_project_template() {
+    local dest="$PROJECT_PATH/CLAUDE.md"
+    [ -f "$SOURCE_PROJECT_TEMPLATE" ] || { warn "Missing $SOURCE_PROJECT_TEMPLATE"; return; }
+    if [ -f "$dest" ]; then ok "$dest already exists; leaving it alone"; return; fi
+    confirm "Create a project CLAUDE.md template at $dest?" || return 0
+    dry "write $dest" && return
+    cp "$SOURCE_PROJECT_TEMPLATE" "$dest"
+    ok "Project template written to $dest (fill in Commands, Conventions, Boundaries)"
+}
+
 main() {
     echo -e "${BLUE}dotClaude installer${NC} (OS: $OS)"
+    [ "$DRY_RUN" = true ] && warn "Dry run: nothing will be written"
     echo ""
 
     step "Step 1: Prerequisites"
-    if command -v claude &> /dev/null; then
+    check_node
+    if [ "$UNINSTALL" = true ]; then
+        :
+    elif command -v claude &> /dev/null; then
         ok "Claude Code already installed"
     elif [ "$SKIP_CLAUDE_INSTALL" = true ]; then
         warn "Skipping Claude Code installation (--skip-claude-install)"
-    else
+    elif ! dry "install Claude Code via npm"; then
         install_claude_code
     fi
-    if command -v gh &> /dev/null; then ok "GitHub CLI already installed"; else install_gh_cli; fi
+    if [ "$UNINSTALL" = true ]; then
+        :
+    elif command -v gh &> /dev/null; then
+        ok "GitHub CLI already installed"
+    elif ! dry "install GitHub CLI"; then
+        install_gh_cli
+    fi
+    [ "$UNINSTALL" = true ] || check_onfailure
     echo ""
+
+    if [ "$UNINSTALL" = true ]; then
+        step "Uninstall: select level"
+        prompt_install_level
+        if wants_project; then resolve_project_path; fi
+        if wants_user; then uninstall_scope "$CLAUDE_CONFIG_DIR"; fi
+        if wants_project; then uninstall_scope "$PROJECT_PATH/.claude"; fi
+        echo ""
+        if [ "$DRY_RUN" = true ]; then ok "Dry run complete (nothing written)"; else ok "Uninstall complete (a settings.json backup was kept if settings changed)."; fi
+        return
+    fi
 
     step "Step 2: Installation level"
     prompt_install_level
@@ -282,11 +377,17 @@ main() {
     echo ""
 
     step "Step 5: Install agents"
-    if wants_user; then install_agents "$USER_AGENTS_DIR"; fi
-    if wants_project; then install_agents "$PROJECT_PATH/.claude/agents"; fi
+    if wants_user; then install_agents "$CLAUDE_CONFIG_DIR"; fi
+    if wants_project; then install_agents "$PROJECT_PATH/.claude"; fi
+    echo ""
+
+    step "Step 6: Hooks, statusline, skills, settings"
+    if wants_user; then install_scope "$CLAUDE_CONFIG_DIR"; fi
+    if wants_project; then install_scope "$PROJECT_PATH/.claude"; install_project_template; fi
 
     verify_installation
     echo ""
+    if [ "$DRY_RUN" = true ]; then ok "Dry run complete (nothing written)"; return 0; fi
     ok "Installation complete. Start Claude Code with 'claude'; list agents with ./install/list-agents.sh"
 }
 

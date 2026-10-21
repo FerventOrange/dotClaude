@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Unit tests
+        run: node --test "hooks/*.test.js" "statusline/*.test.js"
+
+      - name: Validate agents, skills, roster
+        run: node scripts/validate.js
+
+      - name: Shell syntax
+        run: |
+          for f in install/*.sh; do bash -n "$f"; done
+
+      - name: ShellCheck
+        run: shellcheck install/*.sh
+
+      - name: Installer dry run (sandboxed)
+        env:
+          HOME: ${{ runner.temp }}/home-dry
+          CLAUDE_CONFIG_DIR: ${{ runner.temp }}/home-dry/.claude
+        run: |
+          mkdir -p "$HOME"
+          bash install/install.sh --dry-run --level user --force --skip-claude-install </dev/null
+          if [ -e "$CLAUDE_CONFIG_DIR/agents" ]; then
+            echo "dry run wrote files" >&2
+            exit 1
+          fi
+
+      - name: Install, verify, uninstall (sandboxed)
+        env:
+          HOME: ${{ runner.temp }}/home
+          CLAUDE_CONFIG_DIR: ${{ runner.temp }}/home/.claude
+        run: |
+          mkdir -p "$HOME"
+          bash install/install.sh --level user --force --skip-claude-install </dev/null
+
+          check_installed() {
+            node -e '
+              const fs = require("fs"), path = require("path");
+              const cfg = process.env.CLAUDE_CONFIG_DIR;
+              const agents = fs.readdirSync(path.join(cfg, "agents")).filter(f => f.endsWith(".md"));
+              if (agents.length !== 8) throw new Error("expected 8 agents, found " + agents.length);
+              if (!fs.existsSync(path.join(cfg, "dotclaude", "guard.js"))) throw new Error("guard.js missing");
+              if (!fs.existsSync(path.join(cfg, "dotclaude", "manifest.json"))) throw new Error("manifest.json missing");
+              const raw = fs.readFileSync(path.join(cfg, "settings.json"), "utf8");
+              JSON.parse(raw);
+              if (!raw.includes("dotclaude/guard.js")) throw new Error("guard hook not in settings.json");
+            '
+          }
+          check_installed
+
+          bash install/install.sh --uninstall --level user --force --skip-claude-install </dev/null
+
+          node -e '
+            const fs = require("fs"), path = require("path");
+            const cfg = process.env.CLAUDE_CONFIG_DIR;
+            const agentsDir = path.join(cfg, "agents");
+            const left = fs.existsSync(agentsDir) ? fs.readdirSync(agentsDir).filter(f => f.endsWith(".md")) : [];
+            if (left.length) throw new Error("agents remain after uninstall: " + left.join(", "));
+            if (fs.existsSync(path.join(cfg, "dotclaude"))) throw new Error("dotclaude dir remains after uninstall");
+            const sp = path.join(cfg, "settings.json");
+            if (fs.existsSync(sp)) {
+              const raw = fs.readFileSync(sp, "utf8");
+              JSON.parse(raw);
+              if (raw.includes("dotclaude/guard.js")) throw new Error("guard hook remains after uninstall");
+            }
+          '
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Unit tests
+        run: node --test "hooks/*.test.js" "statusline/*.test.js"
+
+      - name: PowerShell parse check
+        run: |
+          $failed = $false
+          foreach ($f in Get-ChildItem install -Filter *.ps1) {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$errors)
+            if ($errors) { $errors | ForEach-Object { Write-Error "$($f.Name): $_" }; $failed = $true }
+          }
+          if ($failed) { exit 1 }
+
+      - name: Install, verify, uninstall (sandboxed)
+        env:
+          USERPROFILE: ${{ runner.temp }}\home
+          CLAUDE_CONFIG_DIR: ${{ runner.temp }}\home\.claude
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:USERPROFILE | Out-Null
+
+          & ./install/install.ps1 -DryRun -InstallLevel user -Force -SkipClaudeInstall
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          if (Test-Path "$env:CLAUDE_CONFIG_DIR\agents") { throw 'dry run wrote files' }
+
+          & ./install/install.ps1 -InstallLevel user -Force -SkipClaudeInstall
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+          $cfg = $env:CLAUDE_CONFIG_DIR
+          $count = @(Get-ChildItem "$cfg\agents" -Filter *.md).Count
+          if ($count -ne 8) { throw "expected 8 agents, found $count" }
+          if (-not (Test-Path "$cfg\dotclaude\guard.js")) { throw 'guard.js missing' }
+          if (-not (Test-Path "$cfg\dotclaude\manifest.json")) { throw 'manifest.json missing' }
+          $raw = Get-Content "$cfg\settings.json" -Raw
+          $null = $raw | ConvertFrom-Json
+          if ($raw -notmatch 'dotclaude[/\\\\]+guard\.js') { throw 'guard hook not in settings.json' }
+
+          & ./install/install.ps1 -Uninstall -InstallLevel user -Force -SkipClaudeInstall
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+          if (Test-Path "$cfg\agents") {
+            $left = @(Get-ChildItem "$cfg\agents" -Filter *.md)
+            if ($left.Count) { throw "agents remain after uninstall: $($left.Name -join ', ')" }
+          }
+          if (Test-Path "$cfg\dotclaude") { throw 'dotclaude dir remains after uninstall' }
+          if (Test-Path "$cfg\settings.json") {
+            $raw = Get-Content "$cfg\settings.json" -Raw
+            $null = $raw | ConvertFrom-Json
+            if ($raw -match 'dotclaude[/\\\\]+guard\.js') { throw 'guard hook remains after uninstall' }
+          }

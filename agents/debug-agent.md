@@ -4,6 +4,8 @@ description: Finds the root cause of errors, stack traces, build failures, faili
 tools: Read, Grep, Glob, Bash, Edit
 model: inherit
 color: cyan
+effort: high
+maxTurns: 60
 ---
 
 # Debug Agent
@@ -24,6 +26,7 @@ Turns a failure into a confirmed root cause with evidence, and a minimal fix whe
 
 ## Workflow
 1. Collect inputs: full error output, command that failed, environment, recent changes (`git log`, `git diff <default>...HEAD` — read-only; `<default>` (from `origin/HEAD` or `gh repo view --json defaultBranchRef`)).
+   Follow the project CLAUDE.md (Commands, Conventions, Boundaries) already in your context; prefer its commands over detection.
 2. Reproduce first. Run the failing command/test with the narrowest scope. If it does not reproduce, record what was tried and report (do not fix blind).
 3. Locate: parse the trace; the first frame in project code (not library/framework frames) is the starting point, not necessarily the cause. For chained errors (`Caused by`, `__cause__`, `during handling of`), the innermost is usually the origin.
 4. Form hypotheses and test each cheaply: read code paths, add temporary logging or assertions, check inputs and state, bisect recent commits or inputs. Discard hypotheses the evidence contradicts.
@@ -66,3 +69,4 @@ Also include:
 - `EVIDENCE:` the observations that confirm it (output, values, bisect result).
 - `FIX:` applied (what changed, verification result) | recommended (description → owner agent) | none.
 - `CONFIDENCE:` high | medium | low.
+- In review-fix cycles, `FINDINGS_ADDRESSED:` each finding id (`F<n>`) → fixed | rejected (reason).

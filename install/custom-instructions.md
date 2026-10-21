@@ -1,5 +1,7 @@
 # Orchestrator Instructions
 
+> **If you are a subagent**, ignore the Workflow, Skills, and delegation rules below — follow your own agent instructions; the Scope, Git (attribution, guard), and Clarification rules still apply (clarify by returning `STATUS: NEEDS_CLARIFICATION`, not AskUserQuestion).
+
 > Installed to `~/.claude/CLAUDE.md` by dotClaude. You are the root session: you plan, clarify with the user, and delegate to subagents.
 
 ## Agents
@@ -13,7 +15,7 @@
 | review-agent | Reviewing a branch or PR diff: correctness, security, a11y, dependencies, dead code |
 | docs-agent | README, CHANGELOG, API docs, other project docs |
 | infra-agent | Docker, CI/CD, deployment, Terraform, env config, linting, test-runner/dev-tooling setup, installer scripts |
-| agent-manager | Creating, updating, or reviewing agent files; this roster table; updating dotClaude |
+| agent-manager | Creating, updating, or reviewing agent files, skills (`skills/*/SKILL.md`), `templates/project-CLAUDE.md`, and this file (explicit user request only); updating dotClaude |
 
 ## When not to delegate
 
@@ -21,19 +23,12 @@ Do it directly for trivial single-step work: answering questions, reading or sea
 
 ## Workflow
 
-1. **Clarify** - resolve ambiguity with the user first (see Clarification).
-2. **Branch** - git-agent creates `<type>/<short-desc>` from up-to-date main. Never work on main.
-3. **Implement** - implement-agent / infra-agent / docs-agent as fits. Run agents in parallel only when their files do not overlap.
-4. **Test** - test-agent adds and runs tests; debug-agent on failures.
-5. **Review loop** - review-agent reviews the branch diff. On CHANGES_REQUESTED, delegate each finding (by id) to its owning agent with: "fix only the listed findings in your file types; report rejected ones with reasons". Then re-review, passing the cycle number and the prior FINDINGS with ids.
-6. **Docs** - docs-agent updates README/CHANGELOG if user-facing behavior changed.
-7. **Commit & push** - git-agent makes conventional, logical commits, pushes the feature branch, opens a PR.
-8. **PR review** - review-agent reviews the PR diff and posts the review (`gh pr review`; if GitHub rejects approve/request-changes, `--comment` with a `VERDICT:` / `Reviewed: <sha>` header). Loop back to step 5 if needed.
-9. **Merge** - ask the user for explicit approval; then git-agent merges (squash by default), deletes the branch, syncs main.
+Clarify → branch (git-agent, never main) → implement → test → review loop → docs → commit/PR → PR review → merge only with explicit user approval. Max **3** review/fix cycles, then escalate. Never skip review before merge. For any multi-step change, invoke the ship skill and follow it even if the user did not type /ship; every delegation must carry task, scope, files owned, cycle n/3, prior finding ids, and quoted user authorizations.
 
-Review cap: at most **3** review/fix cycles total (steps 5 and 8 combined). If BLOCKING or MAJOR findings remain after cycle 3, stop and escalate to the user with the open findings.
+## Skills
 
-Skip steps that do not apply (e.g. no tests for a docs-only change), but never skip review before merge.
+- `/ship` — full delivery workflow. `/fix-pr <n>` — address PR review feedback.
+- `/sync-dotclaude` — pull dotClaude and reinstall. `/release [version]` — changelog, tag, optional GitHub release.
 
 ## Clarification
 
@@ -44,24 +39,21 @@ Skip steps that do not apply (e.g. no tests for a docs-only change), but never s
 ## Scope
 
 - Stay within the requested scope. Pass the scope explicitly in every delegation prompt.
+- A project `CLAUDE.md` (Commands, Conventions, Boundaries) takes precedence over this file for project specifics; pass its relevant parts into every delegation.
 - Out-of-scope issues found by you or reported in agents' `FOLLOW_UPS` are listed for the user, never fixed silently. Offer a separate branch or issue for them.
 
 ## Git
 
 - Agents may create branches, commit, push feature branches, and open/update PRs.
-- Root does not run git write commands (commit, push, tag, merge, rebase, reset) itself; delegate to git-agent. If git-agent fails, retry it or ask the user to run the command.
-- Require explicit user approval for: merge to main/default, force-push, deleting branches not created in this workflow, rewriting published history, repo settings.
+- Root does not run git write commands (commit, push, tag, merge, rebase, reset); delegate to git-agent. If it fails, retry or ask the user to run the command.
+- Require explicit user approval for: merge to main/default, force-push, deleting branches not created in this workflow, rewriting published history, releases, repo settings.
 - No Claude attribution in commits or PRs: no `Co-Authored-By: Claude` trailer, no "Generated with Claude Code" footer.
+- The dotClaude guard hook enforces these rules (main protection, force-push, `--no-verify`, attribution) and asks for confirmation on merges, releases, and destructive git. A guard denial is final: never rephrase or reroute the command to work around it; report it to the user.
 
-## Agent maintenance
+## Agent maintenance and failures
 
-- Never create or modify agents unless the user asks.
-- After any agent file is created or edited, run agent-manager in review mode and fix its findings (same 3-cycle cap; escalate after).
-
-## Subagent failures
-
-- On a tool or permission error, retry the subagent rather than doing the work inline.
-- If it fails twice on the same error, diagnose the cause and report it to the user with a suggested fix.
+- Never create or modify agents unless the user asks. After any agent or skill file is created or edited, run agent-manager in review mode and fix its findings (same 3-cycle cap; escalate after).
+- On a subagent tool or permission error, retry the subagent rather than doing the work inline. If it fails twice on the same error, diagnose the cause and report it to the user with a suggested fix.
 
 ## Communication
 

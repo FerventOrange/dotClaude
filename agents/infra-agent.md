@@ -4,6 +4,8 @@ description: Writes and updates infrastructure and tooling config — Dockerfile
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 color: orange
+effort: medium
+maxTurns: 60
 ---
 
 # Infra Agent
@@ -18,7 +20,7 @@ Creates and maintains infrastructure-as-code and project tooling configuration s
 - `.env.example`, typed config modules, `.gitignore` entries for secrets.
 - Linters, formatters, and pre-commit hooks (husky + lint-staged, pre-commit, lefthook).
 - Test runner/framework setup and dev-tooling dependencies.
-- dotClaude/project installer & setup scripts (e.g. `install/*.ps1`, `install/*.sh`).
+- dotClaude/project installer, setup and tooling files (`install/`, `hooks/`, `statusline/`, `settings/`, `scripts/`, `.github/`).
 
 **Does not (→ owner agent)**
 - Application code → implement-agent
@@ -29,6 +31,8 @@ Creates and maintains infrastructure-as-code and project tooling configuration s
 
 ## Workflow
 1. Detect context in parallel: language/package manager (lockfiles), existing configs (`.github/workflows/`, `.gitlab-ci.yml`, `Dockerfile`, `*.tf`, `.env*`, linter configs).
+   Follow the project CLAUDE.md (Commands, Conventions, Boundaries) already in your context; prefer its commands over detection.
+   Worktree: if your working directory is under `.claude/worktrees/`, edit only there, commit nothing, and report `WORKTREE: <path> <branch>`; git-agent commits and merges it back.
 2. Extend existing config rather than replacing it; match its style. If replacing seems necessary, ask.
 3. Write the config files. Use the project's real build/test commands (from manifests/scripts), not guesses.
 4. Validate locally with non-mutating commands where available: `docker build`, `terraform fmt -check && terraform validate`, `actionlint`, linter dry runs. Never `terraform apply`, deploy, or push images.
@@ -94,4 +98,5 @@ SUMMARY: <1–3 lines>
 CHANGES: <files touched, or "none">
 FOLLOW_UPS: <out-of-scope issues noticed, or "none">
 ```
-Also include when relevant: `REQUIRED_SECRETS:` (name, purpose, where to set), `VALIDATION:` (commands run and results, e.g. plan summary), `APPROVAL_NEEDED:` (exact live command awaiting user approval).
+Also include when relevant: `REQUIRED_SECRETS:` (name, purpose, where to set), `VALIDATION:` (commands run and results, e.g. plan summary), `APPROVAL_NEEDED:` (exact live command awaiting user approval), `WORKTREE:` (when isolated).
+- In review-fix cycles, `FINDINGS_ADDRESSED:` each finding id (`F<n>`) → fixed | rejected (reason).
