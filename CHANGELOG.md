@@ -7,7 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-**BREAKING (3.0.0):** The 42-agent roster is replaced by 8 agents with new names and a new file format. Old agent names (for example `git-commit-agent`, `documentation-agent`) no longer exist. Re-run the installer to migrate.
+### Added
+- Guard hook (`hooks/guard.js`, PreToolUse on `Bash` and `PowerShell`): denies commits and pushes on the default branch, `--no-verify`, and Claude attribution in commit/PR/issue text; asks before force pushes to other branches, remote ref deletion, `git reset --hard`, `git clean -f`, `git checkout .`, merge/rebase on the default branch, `gh pr merge`, `gh release create|delete`, `gh repo edit|delete`, and risky `gh api` writes. Fails open; `DOTCLAUDE_GUARD=off` disables it
+- Statusline (`statusline/statusline.js`) showing model, agent, directory, branch with a dirty marker, remaining context, and cost
+- `settings/settings.json` template with the guard hook, statusline, and `permissions.allow` / `permissions.deny` lists, merged by `install/lib/settings-merge.js` (de-duplicated, user keys kept, `settings.json` backed up first)
+- Skills: `/ship`, `/fix-pr`, `/sync-dotclaude`, `/release`
+- `templates/project-CLAUDE.md` per-project template; project-scope installs offer to write it to `<project>/CLAUDE.md` when absent
+- Installer flags `--dry-run` / `-DryRun` and `--uninstall` / `-Uninstall`
+- `scripts/validate.js` for agent files, skills, and the roster table, plus `.github/workflows/ci.yml` (tests, validation, shell checks, sandboxed install on Ubuntu and Windows)
+- Unit tests for the guard hook and statusline (`node --test`)
+- Guard asks before `git branch -D` and `git worktree remove --force`, analyzes commands wrapped in `bash -c`, `cmd /c`, `iex` / `Invoke-Expression`, and `Push-Location`, and honors `--git-dir`
+- Guard hook entry sets `onFailure: block` (Claude Code 2.1.295 or later); the installer omits it with a warning on older versions
+- `PowerShell(...)` allow and deny entries mirroring the `Bash(...)` ones, and `Read` denies for secrets (`**/.env`, `.env.local`, `.env.*.local`, `.env.production`, `*.pem`, SSH keys, `~/.ssh/**`, `~/.aws/**`); `.env.example` stays readable
+- `worktree.baseRef: head` in the settings template, and a `/ship` Parallelism policy: shared branch by default, `isolation: "worktree"` only for overlapping parallel work or alternative approaches, merged back with `--no-ff` one at a time and then removed
+- Installer manifest at `<cfg>/dotclaude/manifest.json`; uninstall reverts exactly what was added, restores a replaced `statusLine`, and removes `settings.json` if the install created it
+- `.gitattributes` for line endings
+- Agent frontmatter keys `effort` and `maxTurns`, and skill keys `argument-hint`, `disable-model-invocation`, and `allowed-tools`; the validator rejects unknown keys
+- Subagent note in the installed `CLAUDE.md`
+
+### Changed
+- Guard attribution check inspects only message text and trailer/footer forms, not the whole command line
+- Installer backs up a user skill that collides with a dotClaude skill instead of overwriting it; dry run ends with "Dry run complete (nothing written)"
+- `/release` and `/sync-dotclaude` are user-only (`disable-model-invocation`)
+- `agent-manager` owns `skills/`, `templates/project-CLAUDE.md`, and `install/custom-instructions.md`
+- CI uses Node 22 and pinned-SHA actions v7, and quotes the test globs: `node --test "hooks/*.test.js" "statusline/*.test.js"`
+- Node.js 18+ is now a prerequisite; installers exit with a message if it is missing
+- Installers also install the guard hook and statusline to `<scope>/dotclaude/`, skills to `<scope>/skills/`, and merge settings
+- Agents read the project `CLAUDE.md` (Commands, Conventions, Boundaries) when present and prefer its commands over detection
+- `install/custom-instructions.md` trimmed: the detailed workflow moved into the `/ship` skill, leaving a short summary and pointers
+- `CONTRIBUTING.md` documents the skill format and the validator/test steps; README documents the new features
+
+## [3.0.0] - 2026-10-20
+
+**BREAKING:** The 42-agent roster is replaced by 8 agents with new names and a new file format. Old agent names (for example `git-commit-agent`, `documentation-agent`) no longer exist. Re-run the installer to migrate.
 
 ### Added
 - `CONTRIBUTING.md` with the agent file format, required sections, and PR process
