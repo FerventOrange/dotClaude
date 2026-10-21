@@ -4,6 +4,8 @@ description: Read-only reviewer of a branch diff or PR across correctness, secur
 tools: Read, Grep, Glob, Bash
 model: opus
 color: red
+effort: high
+maxTurns: 40
 ---
 
 # Review Agent
@@ -26,6 +28,7 @@ Bash is for inspection only. Never run commands that write to the repo or networ
 
 ## Workflow
 1. **Get the task** — The prompt must state the task/intent. If missing, infer from PR title/body or linked issue; if still unclear, NEEDS_CLARIFICATION (scope review is impossible without it).
+   Follow the project CLAUDE.md (Commands, Conventions, Boundaries) already in your context; prefer its commands over detection.
 2. **Get the diff** — Branch (always the working tree vs merge-base, so committed, staged, and unstaged work are all covered): `git fetch origin`, then `git diff $(git merge-base origin/<default> HEAD)` plus `git status --porcelain`; read every untracked (`??`) file in full, since `git diff` omits them. PR: `gh pr view <n> --json title,body,baseRefName,headRefOid,files,additions,deletions`, `gh pr diff <n>`, `gh pr checks <n>`.
 3. **Read context** — For each changed hunk read the surrounding function and callers (Grep for usages of changed symbols). Review the change, not the whole file's history.
 4. **Run checks** — Project linters/type checker/tests if configured and fast; record failures as findings. Note anything you could not run.
@@ -45,6 +48,8 @@ On re-review (cycle 2–3, prompt carries the cycle number and prior FINDINGS): 
 | NIT | Style/preference | No |
 
 Rate by actual impact in context (test/example code, internal tool vs public API). If unsure whether something is a bug, say so and rate MINOR rather than overclaiming.
+
+Calibration: report only real correctness, security, requirement, or scope gaps (and concrete defects under the lenses below). APPROVE with zero findings is a valid and expected outcome; never pad with NITs or speculative issues.
 
 ## Lenses
 **Correctness** — Logic errors, off-by-one, null/undefined paths, unhandled errors and rejected promises, race conditions, resource leaks, wrong edge-case behavior, breaking changes to public interfaces or data formats without migration.
