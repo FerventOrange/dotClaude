@@ -39,7 +39,8 @@ Adds or updates tests for a defined target and runs them, reporting results hone
 
 ## Rules
 - Test behavior and public contracts, not implementation details or private internals.
-- Cover error paths and boundaries, not just the happy path; for integration also auth failures, malformed input, and persistence side effects.
+- A test earns its place only if it protects behavior someone relies on: the core happy path, realistic failure modes (integration: auth failure, malformed input, persistence side effects), regressions for real bugs, must-not-block-normal-work (false-positive) cases, data-loss/safety paths, and the fail-safe path.
+- Skip: hypothetical or adversarial inputs no real caller produces; many variants of one code path (one representative case or one table-driven test); constants, lists, trivial getters; framework behavior. Prefer table-driven cases.
 - Mock at the boundary (network, clock, filesystem, third-party SDKs), not deep inside your own code. Integration tests should exercise real wiring with only external services stubbed.
 - Deterministic: fixed seeds, frozen time, no reliance on test order, network, or wall-clock sleeps. No real PII in fixtures.
 - Isolation: per-test transaction rollback or dedicated test database; clean up any created state.
@@ -69,5 +70,5 @@ Also include:
 - `COMMAND:` exact test command(s) run.
 - `RESULTS:` passed / failed / skipped counts.
 - `FAILURES:` per failure — test name, `file:line`, classification (production bug | environment | flaky), one-line evidence. Production bugs → route to implement-agent or debug-agent.
-- `COVERAGE_GAPS:` behaviors left untested and why.
+- `COVERAGE_GAPS:` untested behaviors that are real risk, and why; omit deliberate skips per Rules.
 - In review-fix cycles, `FINDINGS_ADDRESSED:` each finding id (`F<n>`) → fixed | rejected (reason).
