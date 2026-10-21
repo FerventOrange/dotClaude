@@ -126,7 +126,9 @@ function splitSegments(cmd, ps) {
 // ---- helpers ----
 const normProg = (w) => w.split(/[\\/]/).pop().toLowerCase().replace(/\.(exe|cmd|bat)$/, '');
 
-function toPath(base, p) {
+function toPath(base, p, ps) {
+  // PowerShell accepts \ as a path separator on every platform (pwsh on Linux/macOS too); path.posix does not.
+  if (ps && process.platform !== 'win32') p = p.replace(/\\/g, '/');
   if (p === '~' || /^~[\\/]/.test(p)) p = path.join(os.homedir(), p.slice(1));
   if (process.platform === 'win32') p = p.replace(/^\/([a-zA-Z])(?=\/|$)/, '$1:'); // Git Bash /c/... paths
   return path.resolve(base, p);
@@ -311,7 +313,7 @@ function analyze(cmd, ps, state, depth) {
     prev = seg;
     const fromPipe = seg.piped ? prevSeg : null;
     if (seg.bodies && seg.redirects) { // e.g. cat > body.md <<'EOF' ... EOF, later used via --body-file
-      for (const t of seg.redirects) state.writes.push({ file: toPath(state.cwd, t), text: seg.bodies.join('\n') });
+      for (const t of seg.redirects) state.writes.push({ file: toPath(state.cwd, t, ps), text: seg.bodies.join('\n') });
     }
     const argv = stripPrefixes(seg);
     if (!argv.length) continue;
@@ -324,7 +326,7 @@ function analyze(cmd, ps, state, depth) {
     }
     if (CD.has(prog)) {
       const t = argv.slice(1).find((x) => !x.startsWith('-'));
-      if (t !== '-') state.cwd = toPath(state.cwd, t || os.homedir());
+      if (t !== '-') state.cwd = toPath(state.cwd, t || os.homedir(), ps);
       continue;
     }
     if (depth < 3) {
@@ -343,13 +345,13 @@ function analyze(cmd, ps, state, depth) {
       let dir = state.cwd, gitDir = assign ? assign.slice(8) : (state.gitDir || null), i = 1;
       while (i < argv.length && argv[i].startsWith('-')) {
         const a = argv[i];
-        if (a === '-C') { dir = toPath(dir, argv[i + 1] || '.'); i += 2; }
+        if (a === '-C') { dir = toPath(dir, argv[i + 1] || '.', ps); i += 2; }
         else if (a === '--git-dir') { gitDir = argv[i + 1] || '.'; i += 2; }
         else if (a.startsWith('--git-dir=')) { gitDir = a.slice(10); i++; }
         else i += ['-c', '--work-tree', '--namespace', '--config-env'].includes(a) ? 2 : 1;
       }
       // --work-tree does not change which repository git uses (GIT_DIR is still discovered from cwd).
-      c = { tool: 'git', sub: argv[i], group: argv[i], args: argv.slice(i + 1), dir, repoDir: gitDir ? toPath(dir, gitDir) : dir };
+      c = { tool: 'git', sub: argv[i], group: argv[i], args: argv.slice(i + 1), dir, repoDir: gitDir ? toPath(dir, gitDir, ps) : dir };
     } else if (prog === 'gh') {
       c = { tool: 'gh', sub: `${argv[1]} ${argv[2]}`, group: argv[1], args: argv.slice(2), dir: state.cwd, repoDir: state.cwd };
     } else continue;
@@ -368,7 +370,7 @@ function analyze(cmd, ps, state, depth) {
       state.texts.push(...messageValues(c.args, c.tool), ...(seg.bodies || []));
       for (const f of flagValues(c.args, MESSAGE_FILE_FLAGS)) {
         if (f === '-') { state.texts.push(...pipedText(fromPipe)); continue; }
-        const p = toPath(c.dir, f);
+        const p = toPath(c.dir, f, ps);
         state.files.push(p);
         for (const w of state.writes) if (samePath(w.file, p)) state.texts.push(w.text);
       }
