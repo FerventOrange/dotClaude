@@ -112,7 +112,7 @@ Installed to `<scope>/skills/<name>/SKILL.md`.
 - **Denied:** `git commit` on the default branch; `git push` to the default branch (including bare `git push` while on it); `--no-verify` on commit or push; Claude attribution in commit, tag, PR, issue, or release message text. Only trailer and footer forms are matched (`Co-Authored-By: ... Claude` or `noreply@anthropic.com`, "Generated with [Claude Code](...)"); the rest of the command line is not inspected.
 - **Ask (user confirmation):** force push to a non-default branch; deleting remote branches or tags; `git reset --hard`; `git clean -f`; `git branch -D`; `git worktree remove --force`; `git checkout .` / `git restore .`; `git merge` or `git rebase` while on the default branch; `gh pr merge`; `gh release create|delete`; `gh repo edit|delete`; `gh api` with DELETE/PUT/PATCH on repository settings, branches, or protection.
 
-The guard also analyzes commands wrapped in `bash -c`, `cmd /c`, `iex` / `Invoke-Expression`, and `Push-Location`, and honors `git --git-dir`.
+The guard is a mistake-catcher for Claude's own commands, not a security boundary. It parses the command line directly and does not try to see through wrappers or indirection.
 
 Escape hatch: set `DOTCLAUDE_GUARD=off` in the environment to disable it.
 

@@ -75,6 +75,7 @@ Reviewing agents (`review-agent`, and `docs-agent` in review mode) additionally 
 - **Least-privilege tools.** Grant only the tools the workflow needs; review agents should not need `Write`.
 - **Short and dense.** Aim for ~60-150 lines per file. No filler, marketing, or emoji.
 - **No generic advice.** Keep only rules Claude would not follow by default: project conventions, safety checks, output formats.
+- **Tests.** Test valuable logic: real mistakes, false positives on normal work, fail-safe behavior, and data safety. Skip hypothetical or adversarial inputs and variant explosions; prefer table-driven tests.
 - **Stay in scope.** Out-of-scope discoveries go to `FOLLOW_UPS`, never silent fixes.
 
 ## Commits and Pull Requests
