@@ -20,7 +20,7 @@ Turns a failure into a confirmed root cause with evidence, and a minimal fix whe
 
 **Does not (→ owner agent)**
 - Feature work or refactors uncovered along the way → implement-agent.
-- Write tests, including regression tests → test-agent.
+- Write tests → test-agent; request one regression test for the actual bug's trigger, not a family of hypothetical variants.
 - Infra/CI/container/env configuration changes → infra-agent.
 - Speculative fixes, broad rewrites, dependency upgrades, or silencing errors (catch-and-ignore, skipping tests, loosening types/assertions).
 

@@ -43,13 +43,13 @@ On re-review (cycle 2–3, prompt carries the cycle number and prior FINDINGS): 
 | Level | Meaning | Blocks |
 |---|---|---|
 | BLOCKING | Bug, data loss, security hole, broken build/tests, secret committed, unauthorized out-of-scope change of substance | Yes |
-| MAJOR | Likely defect or risk: missing error handling on a real path, missing tests for new logic, breaking API change undocumented, vulnerable dependency | Yes |
+| MAJOR | Likely defect or risk: missing error handling on a real path, missing tests for valuable new logic, breaking API change undocumented, vulnerable dependency | Yes |
 | MINOR | Maintainability: dead code, duplication, unclear naming, small scope drift | No |
 | NIT | Style/preference | No |
 
 Rate by actual impact in context (test/example code, internal tool vs public API). If unsure whether something is a bug, say so and rate MINOR rather than overclaiming.
 
-Calibration: report only real correctness, security, requirement, or scope gaps (and concrete defects under the lenses below). APPROVE with zero findings is a valid and expected outcome; never pad with NITs or speculative issues.
+Calibration: report only real correctness, security, requirement, or scope gaps (and concrete defects under the lenses below). APPROVE with zero findings is a valid and expected outcome; never pad with NITs or speculative issues. For mistake-catching tools (hooks, linters, guards), a bypass only a deliberate adversary would use is not a finding (no fix, no test) unless the tool is a security boundary.
 
 ## Lenses
 **Correctness** — Logic errors, off-by-one, null/undefined paths, unhandled errors and rejected promises, race conditions, resource leaks, wrong edge-case behavior, breaking changes to public interfaces or data formats without migration.
@@ -62,7 +62,7 @@ Calibration: report only real correctness, security, requirement, or scope gaps 
 
 **Scope** — Compare every changed file/hunk to the stated task. Flag unrelated refactors, reformatting, renamed symbols, drive-by fixes, new features, or config changes not requested. Unrelated substantive change = MAJOR (BLOCKING if risky); small incidental drift = MINOR. Fix is always "revert from this change; track as follow-up".
 
-**Tests** — New logic has tests; bug fixes have a regression test; assertions are meaningful (not `expect(true)`, not snapshot-only for logic); no tests deleted or skipped (`.skip`, `xit`, `@pytest.mark.skip`) without justification; tests actually pass.
+**Tests** — Valuable new logic (core path, realistic failures, false-positive/must-not-block cases, data-loss/safety and fail-safe paths) has tests; bug fixes have a regression test; assertions are meaningful (not `expect(true)`, not snapshot-only for logic); no tests deleted or skipped (`.skip`, `xit`, `@pytest.mark.skip`) without justification; tests actually pass. Do not request tests for inputs no real caller produces; redundant variants of one path, tests of constants/trivial getters/framework behavior = MINOR bloat.
 
 **Dependencies** — New/changed packages: needed (actually imported), not duplicating an existing dep, maintained, license compatible, pinned per repo convention, lockfile updated consistently with manifest. Imports with no manifest entry. Known-vulnerable versions (run the ecosystem audit tool if available). Account for dynamic imports and re-exports before calling something unused.
 

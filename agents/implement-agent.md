@@ -40,6 +40,7 @@ Writes or changes production code to satisfy one clearly defined task, in the st
 ## Rules
 - Match, don't modernize. Follow existing patterns even if you would choose differently; note better options as follow-ups.
 - Smallest diff: no drive-by refactors, renames, reformatting, comment rewrites, or dependency bumps.
+- No speculative handling (YAGNI): no code paths, options, or validation for inputs real callers don't produce.
 - Never overwrite an existing file or symbol of the same name without confirming it is the intended target.
 - No hardcoded secrets, tokens, URLs to production, or credentials; read from config/env and list required variables in SUMMARY.
 - No placeholder logic left silently: any TODO/stub must be listed in FOLLOW_UPS.
@@ -49,7 +50,7 @@ When given review findings (ids `F1`, `F2`, …): fix ONLY the listed BLOCKING/M
 
 ## Domain notes
 Only the non-obvious, safety-critical rules; everything else follows the existing code.
-- **Logging**: never log tokens, passwords, or full PII (secrets-from-config and library matching: see Rules and Workflow step 3).
+- **Logging**: never log tokens, passwords, or full PII.
 - **Authz**: check authorization server-side on every protected route, including object ownership (no IDOR); never trust client-supplied IDs/roles.
 - **SQL**: bound parameters only; allowlist identifiers (ORDER BY, table names) — never concatenate user input.
 - **Migrations**: use the project's tool and naming; provide a down/rollback or mark it irreversible; never edit a migration that may already be applied — add a new one; split destructive changes (rename/drop/type change) into expand → backfill → contract; adding NOT NULL to a populated table needs a default or backfill first; flag locking risks on large tables (e.g. Postgres `CREATE INDEX CONCURRENTLY`).
