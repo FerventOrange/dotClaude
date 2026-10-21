@@ -91,7 +91,7 @@ Reviewing agents (`review-agent`, and `docs-agent` in review mode) additionally 
 1. Run the validator and the unit tests (Node.js 18+, no dependencies):
    ```bash
    node scripts/validate.js
-   node --test "hooks/*.test.js" "statusline/*.test.js"
+   node --test "hooks/*.test.js" "statusline/*.test.js" "install/lib/*.test.js"
    ```
    CI runs both on every PR.
 2. Run `agent-manager` in review mode on every agent file you added or changed, and resolve all BLOCKING and MAJOR findings.

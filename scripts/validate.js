@@ -149,7 +149,22 @@ function checkRoster(agentNames) {
   for (const a of new Set(dup)) err(file, `roster lists "${a}" more than once`);
 }
 
+// install/lib/known-releases.json: sha256 of every agent shipped at v3.0.0 (lets the installer adopt pristine pre-manifest installs)
+function checkKnownReleases() {
+  const file = path.join(root, 'install', 'lib', 'known-releases.json');
+  if (!fs.existsSync(file)) return err(file, 'missing');
+  let kr;
+  try { kr = JSON.parse(read(file)); } catch (e) { return err(file, `invalid JSON: ${e.message}`); }
+  for (const n of ['agent-manager', 'debug-agent', 'docs-agent', 'git-agent', 'implement-agent', 'infra-agent', 'review-agent', 'test-agent']) {
+    if (!kr[`agents/${n}.md`]) err(file, `no entry for agents/${n}.md`);
+  }
+  for (const [k, h] of Object.entries(kr)) {
+    if (!Array.isArray(h) || !h.length || !h.every((x) => /^[0-9a-f]{64}$/.test(x))) err(file, `"${k}" must be a non-empty array of 64-hex sha256 strings`);
+  }
+}
+
 const agentNames = checkAgents() || [];
+checkKnownReleases();
 checkSkills();
 checkRoster(agentNames);
 

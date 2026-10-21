@@ -3,7 +3,8 @@
 //   merge   --template F --cfg DIR [--force] [--omit-on-failure] [--dry-run]   merge template into DIR/settings.json
 //   unmerge --template F --cfg DIR [--dry-run]             remove dotClaude-owned settings entries
 //   copy    --src REPO --cfg DIR [--dry-run]               install hooks/statusline/skills (backs up unmanaged same-name skills to dotclaude/backups/)
-//   agents  --src REPO --cfg DIR [--dry-run]               install agents/*.md (backs up unmanaged, differing same-name agents)
+//   agents  --src REPO --cfg DIR [--dry-run]               install agents/*.md (backs up unmanaged, differing same-name agents;
+//                                                          adopts exact copies of released agents, see known-releases.json)
 //   remove  --src REPO --cfg DIR [--dry-run]               remove files listed in <cfg>/dotclaude/manifest.json
 // State of what was added lives in <cfg>/dotclaude/manifest.json so uninstall undoes exactly that.
 //   version-lt A B                                         exit 0 if version A < B
@@ -13,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 
 const HEADER = '# Orchestrator Instructions';
-const HOOK_MARK = 'dotclaude/guard.js';
+const HOOK_MARKS = ['dotclaude/guard.js', 'dotclaude/report-check.js'];
 const SL_MARK = 'dotclaude/statusline.js';
 
 const args = process.argv.slice(2);
@@ -33,7 +34,7 @@ const say = (m) => console.log(`${DRY ? '[dry-run] ' : ''}${m}`);
 const die = (m) => { console.error(`[X] ${m}`); process.exit(1); };
 const norm = (c) => String(c || '').replace(/\\/g, '/');
 const cmdOf = (x) => norm(x && x.command);
-const ownsHook = (h) => cmdOf(h).includes(HOOK_MARK);
+const ownsHook = (h) => HOOK_MARKS.some((m) => cmdOf(h).includes(m));
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -104,7 +105,7 @@ function merge() {
       .filter((e) => e.hooks.length);
     s.hooks[ev] = [...cur, ...entries];
   }
-  if (!same(s.hooks, before.hooks)) notes.push('hooks.PreToolUse: dotClaude guard added/updated');
+  if (!same(s.hooks, before.hooks)) notes.push('hooks: dotClaude hooks added/updated');
 
   // statusLine: only if absent, ours, the old jq one, or --force
   if (tpl.statusLine) {
@@ -161,7 +162,7 @@ function unmerge() {
       if (!s.hooks[ev].length) delete s.hooks[ev];
     }
     if (!Object.keys(s.hooks).length) delete s.hooks;
-    if (!same(s.hooks, before.hooks)) notes.push('hooks: dotClaude guard removed');
+    if (!same(s.hooks, before.hooks)) notes.push('hooks: dotClaude hooks removed');
   }
   if (s.statusLine && cmdOf(s.statusLine).includes(SL_MARK)) {
     if (exists && man.replacedStatusLine) { s.statusLine = man.replacedStatusLine; notes.push('statusLine: previous one restored'); }
@@ -228,10 +229,42 @@ function backupItem(cfg, man, rel, what) {
   man.backups.push({ from: rel, to });
 }
 
+// ---- adoption: recognise pristine agents left by an earlier (pre-manifest) dotClaude release ----
+// known-releases.json maps "agents/<name>.md" -> [sha256 of normalized content] (strip BOM, CRLF -> LF)
+const readText = (p) => { try { return fs.readFileSync(p, 'utf8').replace(/^﻿/, ''); } catch (e) { return null; } };
+function knownHashes() {
+  try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'known-releases.json'), 'utf8')); } catch (e) { return {}; }
+}
+const sha = (t) => require('crypto').createHash('sha256').update(t).digest('hex');
+// file p is, after normalization, exactly a released dotClaude agent named rel ("agents/<name>.md")
+function adoptableAgent(p, rel) {
+  const t = readText(p), hs = knownHashes()[rel];
+  return t !== null && Array.isArray(hs) && hs.includes(sha(t.replace(/\r\n/g, '\n')));
+}
+// drop recorded agent backups that are just pristine released copies
+function cleanBackups(cfg, man, kind, srcRoot) {
+  const root = path.resolve(cfg, 'dotclaude', 'backups');
+  const keep = [];
+  for (const b of man.backups) {
+    if (!b || typeof b.from !== 'string' || typeof b.to !== 'string') { keep.push(b); continue; }
+    const parts = b.from.split('/'), to = inside(cfg, b.to);
+    const ours = parts.length === 2 && parts[0] === kind ? path.join(srcRoot, kind, parts[1]) : null;
+    if (!ours || !to || !to.startsWith(root + path.sep) || !fs.existsSync(to) || !fs.existsSync(ours)
+      || !fs.statSync(to).isFile() || !adoptableAgent(to, b.from)) { keep.push(b); continue; }
+    say(`remove stale backup ${to} (released dotClaude agent ${parts[1]})`);
+    if (DRY) { keep.push(b); continue; }
+    fs.rmSync(to, { force: true });
+    for (let d = path.dirname(to); d.startsWith(root); d = path.dirname(d)) {
+      try { if (!fs.readdirSync(d).length) fs.rmdirSync(d); else break; } catch (e) { break; }
+    }
+  }
+  man.backups = keep;
+}
+
 function copyFiles() {
   const cfg = opt.cfg, src = opt.src;
   const { man } = loadManifest(cfg);
-  const jobs = [['hooks/guard.js', 'dotclaude/guard.js'], ['statusline/statusline.js', 'dotclaude/statusline.js']];
+  const jobs = [['hooks/guard.js', 'dotclaude/guard.js'], ['hooks/report-check.js', 'dotclaude/report-check.js'], ['statusline/statusline.js', 'dotclaude/statusline.js']];
   const skillNames = [];
   const skills = path.join(src, 'skills');
   if (fs.existsSync(skills)) {
@@ -268,10 +301,14 @@ function copyAgents() {
   if (!DRY) fs.mkdirSync(dir, { recursive: true });
   for (const name of agents) {
     const f = path.join(src, name), t = path.join(dir, name);
-    if (fs.existsSync(t) && !man.agents.includes(name) && !fs.readFileSync(t).equals(fs.readFileSync(f))) backupItem(cfg, man, `agents/${name}`, 'agent');
+    if (fs.existsSync(t) && !man.agents.includes(name) && !fs.readFileSync(t).equals(fs.readFileSync(f))) {
+      if (adoptableAgent(t, `agents/${name}`)) say(`adopt agent ${name.replace(/.md$/, '')} (released dotClaude copy; replacing without backup)`);
+      else backupItem(cfg, man, `agents/${name}`, 'agent');
+    }
     if (DRY) say(`install agent ${name} -> ${dir}`);
     else { fs.copyFileSync(f, t); console.log(`  Installed: ${name.replace(/.md$/, '')}`); }
   }
+  cleanBackups(cfg, man, 'agents', opt.src);
   man.agents = uniq([...man.agents, ...agents]);
   writeManifest(cfg, man);
   if (!DRY) console.log(`[OK] ${agents.length} agent(s) installed to ${dir}`);
@@ -282,7 +319,7 @@ function removeFiles() {
   const { man, exists } = loadManifest(cfg);
   let files = man.files, agents = man.agents;
   if (!exists) { // no manifest: derive from the repo (files that exist in both, never whole user dirs)
-    files = ['dotclaude/guard.js', 'dotclaude/statusline.js'];
+    files = ['dotclaude/guard.js', 'dotclaude/report-check.js', 'dotclaude/statusline.js'];
     const sk = path.join(src, 'skills');
     if (fs.existsSync(sk)) for (const d of fs.readdirSync(sk, { withFileTypes: true })) if (d.isDirectory()) files.push(...listFiles(sk, d.name).map((r) => `skills/${r}`));
     const ag = path.join(src, 'agents');
@@ -309,6 +346,7 @@ function removeFiles() {
   if (!DRY) prune();
   // put backed-up user skills/agents back where they were
   for (const b of exists ? man.backups : []) {
+    if (!b || typeof b.from !== 'string' || typeof b.to !== 'string') continue;
     const from = inside(cfg, b.from), to = inside(cfg, b.to);
     if (!from || !to) { console.warn(`[!] Ignoring backup path outside ${cfg}: ${b.from} <- ${b.to}`); continue; }
     if (!fs.existsSync(to)) continue;

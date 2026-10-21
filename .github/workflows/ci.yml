@@ -21,13 +21,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
 
       - name: Unit tests
-        run: node --test "hooks/*.test.js" "statusline/*.test.js"
+        run: node --test "hooks/*.test.js" "statusline/*.test.js" "install/lib/*.test.js"
 
       - name: Validate agents, skills, roster
         run: node scripts/validate.js
@@ -66,10 +67,13 @@ jobs:
               const agents = fs.readdirSync(path.join(cfg, "agents")).filter(f => f.endsWith(".md"));
               if (agents.length !== 8) throw new Error("expected 8 agents, found " + agents.length);
               if (!fs.existsSync(path.join(cfg, "dotclaude", "guard.js"))) throw new Error("guard.js missing");
+              if (!fs.existsSync(path.join(cfg, "dotclaude", "report-check.js"))) throw new Error("report-check.js missing");
               if (!fs.existsSync(path.join(cfg, "dotclaude", "manifest.json"))) throw new Error("manifest.json missing");
               const raw = fs.readFileSync(path.join(cfg, "settings.json"), "utf8");
               JSON.parse(raw);
               if (!raw.includes("dotclaude/guard.js")) throw new Error("guard hook not in settings.json");
+              const stop = (JSON.parse(raw).hooks || {}).SubagentStop || [];
+              if (!JSON.stringify(stop).includes("dotclaude/report-check.js")) throw new Error("SubagentStop report-check hook not in settings.json");
             '
           }
           check_installed
@@ -88,6 +92,7 @@ jobs:
               const raw = fs.readFileSync(sp, "utf8");
               JSON.parse(raw);
               if (raw.includes("dotclaude/guard.js")) throw new Error("guard hook remains after uninstall");
+              if (raw.includes("dotclaude/report-check.js")) throw new Error("report-check hook remains after uninstall");
             }
           '
 
@@ -101,13 +106,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
 
       - name: Unit tests
-        run: node --test "hooks/*.test.js" "statusline/*.test.js"
+        run: node --test "hooks/*.test.js" "statusline/*.test.js" "install/lib/*.test.js"
 
       - name: PowerShell parse check
         run: |
@@ -137,10 +143,13 @@ jobs:
           $count = @(Get-ChildItem "$cfg\agents" -Filter *.md).Count
           if ($count -ne 8) { throw "expected 8 agents, found $count" }
           if (-not (Test-Path "$cfg\dotclaude\guard.js")) { throw 'guard.js missing' }
+          if (-not (Test-Path "$cfg\dotclaude\report-check.js")) { throw 'report-check.js missing' }
           if (-not (Test-Path "$cfg\dotclaude\manifest.json")) { throw 'manifest.json missing' }
           $raw = Get-Content "$cfg\settings.json" -Raw
           $null = $raw | ConvertFrom-Json
           if ($raw -notmatch 'dotclaude[/\\\\]+guard\.js') { throw 'guard hook not in settings.json' }
+          $stop = ($raw | ConvertFrom-Json).hooks.SubagentStop
+          if (-not $stop -or (($stop | ConvertTo-Json -Depth 10) -notmatch 'dotclaude[/\\\\]+report-check\.js')) { throw 'SubagentStop report-check hook not in settings.json' }
 
           & ./install/install.ps1 -Uninstall -InstallLevel user -Force -SkipClaudeInstall
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
@@ -154,4 +163,5 @@ jobs:
             $raw = Get-Content "$cfg\settings.json" -Raw
             $null = $raw | ConvertFrom-Json
             if ($raw -match 'dotclaude[/\\\\]+guard\.js') { throw 'guard hook remains after uninstall' }
+            if ($raw -match 'dotclaude[/\\\\]+report-check\.js') { throw 'report-check hook remains after uninstall' }
           }

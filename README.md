@@ -40,9 +40,9 @@ What the installer does:
 3. **Installs the orchestrator rules** - writes `CLAUDE.md` (from `install/custom-instructions.md`) with the workflow contract below. An existing `CLAUDE.md` is replaced only after a y/N prompt, and a timestamped backup is kept.
 4. **Legacy cleanup** - detects agents from dotClaude v2 and earlier (per-agent directories such as `agents/git-commit-agent/`) and, after a y/N prompt, removes them so they do not shadow the new roster. In user scope it also offers to remove the orphaned `hooks/block-git-commands.js` from earlier versions when `settings.json` no longer references it.
 5. **Copies agents** - writes the 8 files from `agents/*.md` into `<scope>/agents/`.
-6. **Hooks, statusline, skills, settings** - copies the guard hook and statusline to `<scope>/dotclaude/`, the skills to `<scope>/skills/`, and merges `settings/settings.json` into `<scope>/settings.json` (backed up first as `settings.json.backup.<timestamp>`). A user skill with the same name as a dotClaude skill is backed up, never overwritten. What was added is recorded in `<scope>/dotclaude/manifest.json`. In project scope it also offers to write `<project>/CLAUDE.md` from the project template, only if none exists.
+6. **Hooks, statusline, skills, settings** - copies the guard hook, report-check hook, and statusline to `<scope>/dotclaude/`, the skills to `<scope>/skills/`, and merges `settings/settings.json` into `<scope>/settings.json` (backed up first as `settings.json.backup.<timestamp>`). What was added is recorded in `<scope>/dotclaude/manifest.json`. In project scope it also offers to write `<project>/CLAUDE.md` from the project template, only if none exists.
 
-Agent files with the same names in `<scope>/agents/` are always overwritten. An existing `CLAUDE.md` is replaced only after a y/N prompt, with a timestamped backup. Legacy agent directories and the orphaned `hooks/block-git-commands.js` (user scope only) are removed only after a y/N prompt. `--force` (bash) or `-Force` (PowerShell) answers yes to every prompt and also replaces a custom `statusLine`.
+Agents that exactly match a released dotClaude version (content hash in `install/lib/known-releases.json`) are adopted: replaced without a backup, and stale backups of such copies are removed. Skills are never adopted; any user skill with the same name as a dotClaude skill is backed up. Other user agents with the same name as a dotClaude agent are backed up under `<scope>/dotclaude/backups/` before being replaced. An existing `CLAUDE.md` is replaced only after a y/N prompt, with a timestamped backup. Legacy agent directories and the orphaned `hooks/block-git-commands.js` (user scope only) are removed only after a y/N prompt. `--force` (bash) or `-Force` (PowerShell) answers yes to every prompt and also replaces a custom `statusLine`.
 
 ### Dry run and uninstall
 
@@ -116,6 +116,16 @@ The guard also analyzes commands wrapped in `bash -c`, `cmd /c`, `iex` / `Invoke
 
 Escape hatch: set `DOTCLAUDE_GUARD=off` in the environment to disable it.
 
+## Report check
+
+`hooks/report-check.js` is a SubagentStop hook for the dotClaude agents. It blocks an agent from stopping until its final message contains the report contract fields: `STATUS`, `SUMMARY`, `CHANGES`, and `FOLLOW_UPS`, plus `VERDICT` for `review-agent`. `STATUS` must be one of `DONE`, `NEEDS_CLARIFICATION`, or `BLOCKED`.
+
+- **Block once, then allow:** the agent gets one request to append the missing fields. If they are still missing on the retry, the stop is allowed and a warning goes to stderr.
+- **`NEEDS_CLARIFICATION`:** only `STATUS` and `QUESTIONS` are required.
+- **Fails open:** other agents, an unreadable message, or an internal error allow the stop.
+
+Escape hatch: set `DOTCLAUDE_REPORT_CHECK=off` in the environment to disable it.
+
 ## Permissions
 
 `settings/settings.json` is merged into your `settings.json`. Arrays are de-duplicated and existing keys are never removed.
@@ -140,7 +150,7 @@ By default parallel agents share the feature branch and own non-overlapping file
 dotClaude/
 ├── agents/            # One flat file per agent: <name>.md with Claude Code frontmatter
 ├── skills/            # ship, fix-pr, sync-dotclaude, release (each <name>/SKILL.md)
-├── hooks/             # guard.js PreToolUse hook and its tests
+├── hooks/             # guard.js, report-check.js hooks and their tests
 ├── statusline/        # statusline.js and its tests
 ├── settings/          # settings.json template (hook, statusline, permissions)
 ├── templates/         # project-CLAUDE.md
@@ -151,6 +161,7 @@ dotClaude/
 │   ├── install.sh              # Linux/macOS installer
 │   ├── install.ps1             # Windows installer
 │   ├── lib/settings-merge.js   # Settings merge/unmerge and file copy helper
+│   ├── lib/known-releases.json # Released agent hashes used for adoption
 │   ├── list-agents.sh          # List agents and their descriptions (Linux/macOS)
 │   └── list-agents.ps1         # List agents and their descriptions (Windows)
 ├── .gitattributes     # Line endings: LF for .sh, CRLF for .ps1
@@ -162,14 +173,12 @@ dotClaude/
 
 ## Updating
 
-Pull the latest version and re-run the installer:
+Pull the latest version and re-run the installer, or run `/sync-dotclaude`:
 
 ```bash
 cd dotClaude && git pull
 ./install/install.sh            # or .\install\install.ps1 on Windows
 ```
-
-Or run `/sync-dotclaude`.
 
 ## Contributing
 

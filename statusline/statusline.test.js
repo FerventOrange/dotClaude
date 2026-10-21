@@ -1,5 +1,5 @@
 'use strict';
-// Run: node --test "hooks/*.test.js" "statusline/*.test.js"
+// Run: node --test "hooks/*.test.js" "statusline/*.test.js" "install/lib/*.test.js"
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');

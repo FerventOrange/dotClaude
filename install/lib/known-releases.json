@@ -1,0 +1,26 @@
+{
+  "agents/agent-manager.md": [
+    "967a928b838fd7a2f0655f49dabb747a2880fd372928757e22aeaeea0ddb428d"
+  ],
+  "agents/debug-agent.md": [
+    "b55da451766dccdfff53073a87cc83fc74ca08f3e592e86d301d9d4827bf7ae2"
+  ],
+  "agents/docs-agent.md": [
+    "71a099dd57c4dc5e7faae12ec7606b1081108ee851ec98d1edec0528a269ff4f"
+  ],
+  "agents/git-agent.md": [
+    "4577fac0a4a10467b3d6929fdb5044298fc54a93e219f4171f79f3f1a9ad49e9"
+  ],
+  "agents/implement-agent.md": [
+    "fa7340b697994a19a4cca594221c2a215ca348dd96933e7432b75d0ad56170f7"
+  ],
+  "agents/infra-agent.md": [
+    "237b4d266b73607dc5c604b978c53cca6ef7ad56e9aba0d85e88996162cec26e"
+  ],
+  "agents/review-agent.md": [
+    "edcc15e11e69f5aaeefd8044dadaa16614b3fd8deea9780b064b140129b022c9"
+  ],
+  "agents/test-agent.md": [
+    "2b248f1574fa83ab7516909f02f944cd5833cccd74180b5e0fb91b5517ca4b5b"
+  ]
+}
