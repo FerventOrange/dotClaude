@@ -19,7 +19,6 @@ NC='\033[0m'
 
 DOTCLAUDE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE_INSTRUCTIONS="$DOTCLAUDE_DIR/install/custom-instructions.md"
-SOURCE_AGENTS_DIR="$DOTCLAUDE_DIR/agents"
 SOURCE_SETTINGS="$DOTCLAUDE_DIR/settings/settings.json"
 SOURCE_PROJECT_TEMPLATE="$DOTCLAUDE_DIR/templates/project-CLAUDE.md"
 HELPER="$DOTCLAUDE_DIR/install/lib/settings-merge.js"
@@ -227,7 +226,9 @@ is_legacy_agent_dir() {
     local dir="$1" name
     name="$(basename "$dir")"
     [ -f "$dir/instructions.md" ] || return 1
-    case " $(echo $LEGACY_AGENTS) " in *" $name "*) return 0 ;; esac
+    local known
+    known=" $(printf '%s' "$LEGACY_AGENTS" | tr '\n' ' ') "
+    case "$known" in *" $name "*) return 0 ;; esac
     sed -n '2,/^---$/p' "$dir/instructions.md" | grep -qE '^(version|mcp_servers):'
 }
 
