@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-20
+
 ### Added
 - Guard hook (`hooks/guard.js`, PreToolUse on `Bash` and `PowerShell`): denies commits and pushes on the default branch, `--no-verify`, and Claude attribution in commit/PR/issue text; asks before force pushes to other branches, remote ref deletion, `git reset --hard`, `git clean -f`, `git checkout .`, merge/rebase on the default branch, `gh pr merge`, `gh release create|delete`, `gh repo edit|delete`, and risky `gh api` writes. Fails open; `DOTCLAUDE_GUARD=off` disables it
 - Statusline (`statusline/statusline.js`) showing model, agent, directory, branch with a dirty marker, remaining context, and cost
