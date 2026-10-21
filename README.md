@@ -1,302 +1,124 @@
 # dotClaude
 
-A curated collection of 42 specialized AI agents for Claude Code CLI. This repository provides ready-to-use agents that extend Claude Code's capabilities across the full development lifecycle -- from frontend scaffolding and backend API design to database management, CI/CD pipelines, and documentation.
+A lean set of 8 Claude Code subagents and an orchestration contract that drive a full branch-to-merge workflow: clarify, implement, test, review, document, commit, open a PR, and merge only after you approve.
 
-## Why dotClaude?
-
-**The Problem:** Claude Code is powerful, but using it effectively for repetitive tasks requires crafting detailed prompts each time. Complex workflows like generating changelogs, reviewing documentation, or creating consistent commit messages need specific context and instructions.
-
-**The Solution:** dotClaude provides pre-built, specialized agents that:
-- **Save time** - No need to write detailed prompts for common tasks
-- **Ensure consistency** - Agents follow best practices and standardized formats
-- **Enable workflows** - Agents can work together (e.g., generate README, then review it)
-- **Stay updated** - Self-updating mechanism keeps agents current
-- **Enforce guardrails** - Git command hooks redirect destructive operations to the correct agent
+The root Claude Code session acts as the orchestrator. Its rules live in `CLAUDE.md`, which the installer places for you. Each agent owns one clear part of the work and returns a structured report the orchestrator can act on.
 
 ## Prerequisites
 
-Before installing dotClaude, ensure you have:
-
-1. **Node.js** (v18 or higher)
-   - Check: `node --version`
-   - Download: [nodejs.org](https://nodejs.org/)
-
-2. **Claude Code CLI** (installed and authenticated)
-   - Install: `npm install -g @anthropic-ai/claude-code`
-   - Verify: `claude --version`
-
-3. **Git** (for cloning and agent operations)
-   - Check: `git --version`
-
-4. **GitHub CLI** (for PR workflows, installed automatically by the installer)
-   - Check: `gh --version`
-   - Install: `winget install GitHub.cli` or visit [cli.github.com](https://cli.github.com/)
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated (`claude --version`)
+- Git (`git --version`)
+- GitHub CLI, authenticated, for PR and review steps (`gh auth status`)
+- Node.js 18+ if the installer needs to install Claude Code via npm
 
 ## Installation
 
-### Linux/macOS
+Linux / macOS:
 
 ```bash
 git clone https://github.com/FerventOrange/dotClaude.git
 cd dotClaude
-chmod +x install/install.sh
-./install/install.sh
+./install/install.sh                                         # prompts for scope (default: user)
+./install/install.sh --level user                            # user scope: ~/.claude
+./install/install.sh --level project --project-path ~/code/app  # project scope: <project>/.claude
 ```
 
-### Windows (PowerShell)
+Windows (PowerShell):
 
 ```powershell
 git clone https://github.com/FerventOrange/dotClaude.git
 cd dotClaude
-.\install\install.ps1
+.\install\install.ps1                                              # prompts for scope (default: user)
+.\install\install.ps1 -InstallLevel user                          # user scope
+.\install\install.ps1 -InstallLevel project -ProjectPath C:\code\app  # project scope
 ```
 
-### What the Installer Does
+What the installer does:
 
-1. Installs Claude Code via npm (if not already present)
-2. Installs GitHub CLI via the system package manager (if not already present)
-3. Copies custom instructions to `~/.claude/CLAUDE.md` for agent awareness
-4. Copies all 42 agents to `~/.claude/agents/`
-5. Installs a PreToolUse hook (`block-git-commands.js`) that intercepts direct git commit, push, tag, merge, and rebase commands and redirects them to the appropriate agent
-6. Merges the hook configuration into `~/.claude/settings.json`
+1. **Prerequisites** - checks for Claude Code and the GitHub CLI, and installs `gh` if it is missing.
+2. **Scope** - installs to user scope (`~/.claude/`, or `$CLAUDE_CONFIG_DIR` when set; every project), project scope (`<project>/.claude/`, one repository), or both. Project scope requires the target to be a git repository and adds `.claude/` to its `.gitignore`.
+3. **Installs the orchestrator rules** - writes `CLAUDE.md` (from `install/custom-instructions.md`) with the workflow contract below. An existing `CLAUDE.md` is replaced only after a y/N prompt, and a timestamped backup is kept.
+4. **Legacy cleanup** - detects agents from dotClaude v2 and earlier (per-agent directories such as `agents/git-commit-agent/`) and, after a y/N prompt, removes them so they do not shadow the new roster. In user scope it also offers to remove the orphaned `hooks/block-git-commands.js` from earlier versions when `settings.json` no longer references it.
+5. **Copies agents** - writes the 8 files from `agents/*.md` into `<scope>/agents/`.
 
-## Available Agents
+Agent files with the same names in `<scope>/agents/` are always overwritten. An existing `CLAUDE.md` is replaced only after a y/N prompt, with a timestamped backup. Legacy agent directories and the orphaned `hooks/block-git-commands.js` (user scope only) are removed only after a y/N prompt. `--force` (bash) or `-Force` (PowerShell) answers yes to every prompt.
 
-### GitHub (6 agents)
+## Agents
 
-| Agent | Purpose |
-|-------|---------|
-| **git-commit-agent** | Suggest conventional commit messages |
-| **git-pr-agent** | Manage branches for PR workflows |
-| **git-tags-agent** | Manage git tags and version releases |
-| **git-issues-agent** | Create well-formatted GitHub issues |
-| **git-sync-agent** | Sync forks with upstream repositories |
-| **pr-review-agent** | Review pull requests with structured comments |
+| Agent | Owns | Model |
+|-------|------|-------|
+| `git-agent` | Branches, commits, pushes, PRs, issues, tags, fork sync, merges (with approval) | sonnet |
+| `review-agent` | Code, security, PR, accessibility, and dependency review; dead-code findings | opus |
+| `implement-agent` | Application code: features, endpoints, components, auth, data/SQL, schemas | inherit |
+| `test-agent` | Unit and integration tests; running the suite | sonnet |
+| `debug-agent` | Root-cause analysis of errors and failing tests | inherit |
+| `docs-agent` | README, CHANGELOG, API docs, contributor docs, doc review | sonnet |
+| `infra-agent` | Docker, CI/CD, deployment, Terraform, env config, linting, test-runner/dev-tooling setup, installer scripts | sonnet |
+| `agent-manager` | Create, update, review, and sync-install the agents themselves | opus |
 
-### Documentation (4 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **documentation-agent** | Generate and update project documentation (README, CONTRIBUTING, guides) |
-| **changelog-agent** | Generate CHANGELOG.md from git history |
-| **doc-review-agent** | Review documentation quality |
-| **api-doc-agent** | Generate API documentation from code |
-
-### Code (7 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **code-cleanup-agent** | Find redundant and duplicate code |
-| **code-review-agent** | Review code for bugs and best practices |
-| **code-linting-agent** | Set up and configure linting tools |
-| **dependency-agent** | Validate dependencies across files |
-| **python-agent** | Python-specific code generation |
-| **security-review-agent** | Review code for security vulnerabilities (OWASP Top 10, secrets, CVEs) |
-| **terraform-agent** | Terraform infrastructure code generation |
-
-### Frontend (4 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **component-generator-agent** | Scaffold UI components with styles, tests, and exports for any framework |
-| **form-builder-agent** | Generate form components with validation, error states, and submission handling |
-| **route-generator-agent** | Generate pages and routes with layout wiring, detecting the routing framework |
-| **accessibility-agent** | Audit UI components for WCAG 2.1 AA compliance (ARIA, contrast, keyboard nav) |
-
-### Backend (3 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **api-endpoint-agent** | Scaffold REST or GraphQL endpoints with types and middleware |
-| **auth-agent** | Generate authentication flows, middleware, guards, and session/JWT setup |
-| **seed-data-agent** | Generate seed and fixture data for development and testing |
-
-### Data (6 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **api-client-agent** | Generate typed API client code from OpenAPI, GraphQL, or tRPC schemas |
-| **state-management-agent** | Scaffold stores, reducers, and context providers matching project patterns |
-| **validation-schema-agent** | Generate Zod, Yup, or JSON validation schemas from types or DB models |
-| **sql-migration-agent** | Generate and review database migration files (Prisma, Knex, raw SQL) |
-| **sql-query-agent** | Build, review, and optimize SQL queries for correctness and performance |
-| **sql-schema-agent** | Review and generate database schema definitions with normalization guidance |
-
-### Testing (3 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **debug-agent** | Parse errors and identify root causes |
-| **unit-test-agent** | Generate unit tests for functions and classes |
-| **integration-test-agent** | Generate integration tests |
-
-### Infrastructure (9 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **docker-agent** | Generate Dockerfiles and docker-compose configs |
-| **env-config-agent** | Manage environment files, secrets templates, and config across environments |
-| **cicd-agent** | Generate CI/CD pipeline configs (GitHub Actions, GitLab CI, and others) |
-| **gitops-agent** | Manage GitHub org/repo settings via gh CLI (branch protection, team permissions, webhooks, labels, templates, CODEOWNERS, drift detection) |
-| **deployment-agent** | Generate deploy scripts and hosting configs (Vercel, AWS, Fly.io, and others) |
-| **agent-creator** | Create new custom agents |
-| **dotclaude-updater** | Update dotClaude from GitHub |
-| **agent-updater** | Update existing agent instructions |
-| **agent-review-agent** | Review agent instructions for quality |
-
-## Usage Examples
-
-### Generate Project Documentation
-
-```bash
-cd your-project
-claude --agent documentation-agent
-# Generates README.md, CONTRIBUTING.md, ARCHITECTURE.md, Getting Started guides, and more
-```
-
-### Create a Changelog
-
-```bash
-claude --agent changelog-agent
-```
-
-### Review Documentation
-
-```bash
-claude --agent doc-review-agent README.md
-```
-
-### Get Commit Message Help
-
-```bash
-git add .
-claude --agent git-commit-agent
-```
-
-### Scaffold a Frontend Component
-
-```bash
-claude --agent component-generator-agent
-```
-
-### Generate an API Endpoint
-
-```bash
-claude --agent api-endpoint-agent
-```
-
-### Generate a CI/CD Pipeline
-
-```bash
-claude --agent cicd-agent
-```
-
-### Multi-Agent Workflows
-
-With agent awareness enabled, Claude can chain agents:
+Every agent ends its run with the same contract:
 
 ```
-You: "Document my project completely"
-Claude will offer: documentation-agent (README, CONTRIBUTING, ARCHITECTURE) -> changelog-agent -> doc-review-agent
+STATUS: DONE | NEEDS_CLARIFICATION | BLOCKED
+SUMMARY: <1-3 lines>
+CHANGES: <files touched, or "none">
+FOLLOW_UPS: <out-of-scope issues noticed, or "none">
 ```
 
-```
-You: "Help me improve code quality"
-Claude will offer: code-review-agent -> code-linting-agent -> code-cleanup-agent -> unit-test-agent
-```
+`review-agent` also emits `FINDINGS` (`F<n> [BLOCKING|MAJOR|MINOR|NIT] file:line - problem - fix`) and a `VERDICT: APPROVE | CHANGES_REQUESTED`.
 
-## Agent Awareness
-
-After installation, Claude automatically recommends agents when you ask for help with matching tasks. The custom instructions installed to `~/.claude/CLAUDE.md` teach Claude to:
-
-- Check for a matching agent before starting any task
-- Recommend the agent and explain why it is a better fit
-- Ask for permission before switching to an agent
-- Chain multiple agents for multi-step workflows
-- Retry a failed subagent rather than falling back to inline work
-
-Example interaction:
+## Workflow
 
 ```
-You: I need to create project documentation
-
-Claude: I can help with that! We have a specialized agent:
-  Agent: documentation-agent
-  Usage: claude --agent documentation-agent
-  It can generate README, CONTRIBUTING, ARCHITECTURE, and other project docs.
-  Would you like to use it? (y/n)
+Clarify -> Branch -> Implement -> Test -> Review loop -> Docs -> Commit & push + PR -> PR review -> Merge
+                                           ^      |                                      |
+                                           +-fix--+<-------------------------------------+
 ```
 
-## Git Command Hooks
+1. **Clarify** - the orchestrator resolves ambiguity with you first. Any agent whose confidence is below 80%, or whose request is ambiguous or contradictory, stops and returns `NEEDS_CLARIFICATION` with specific questions instead of guessing.
+2. **Branch** - `git-agent` creates `<type>/<short-desc>` from an up-to-date main. Work never happens on main.
+3. **Implement** - `implement-agent`, `infra-agent`, or `docs-agent`, in parallel when files do not overlap.
+4. **Test** - `test-agent` adds and runs tests; `debug-agent` handles failures.
+5. **Review loop** - `review-agent` reviews the diff. On `CHANGES_REQUESTED` each finding (`F1`, `F2`, ...) goes to its owning agent, which fixes only those; review then re-runs with the cycle number and prior findings. **Maximum 3 cycles** (local and PR review combined); if BLOCKING or MAJOR findings remain, they are escalated to you.
+6. **Docs** - `docs-agent` updates README/CHANGELOG when user-facing behavior changed.
+7. **Commit & push** - `git-agent` makes conventional commits, pushes the feature branch, and opens a PR.
+8. **PR review** - `review-agent` reviews the PR; further fixes count toward the 3-cycle cap.
+9. **Merge** - **only with your explicit approval**. `git-agent` then merges, deletes the branch, and syncs main.
 
-The installer sets up a PreToolUse hook that intercepts potentially destructive git commands and redirects them to the correct agent. Blocked commands include:
-
-| Command | Redirects to |
-|---------|-------------|
-| `git commit` | git-commit-agent |
-| `git push` | git-pr-agent |
-| `git tag` | git-tags-agent |
-| `git merge` | git-sync-agent |
-| `git rebase` | git-sync-agent |
-| `gh pr edit --title/--body` | git-pr-agent |
-
-This prevents Claude from running raw git operations outside the controlled agent workflows.
+Agents stay in scope: anything they notice outside their task is reported under `FOLLOW_UPS`, never fixed silently. Force-pushes, history rewrites, and repository setting changes also require your approval.
 
 ## Repository Structure
 
 ```
 dotClaude/
-├── agents/
-│   ├── github/          # Git and GitHub workflow agents
-│   ├── documentation/   # Documentation generation agents
-│   ├── code/            # Code analysis and maintenance agents
-│   ├── frontend/        # UI component and routing agents
-│   ├── backend/         # API endpoint and auth agents
-│   ├── data/            # API clients, state, SQL, and validation agents
-│   ├── testing/         # Testing and debugging agents
-│   └── infrastructure/  # Docker, CI/CD, deploy, and dotClaude management agents
-├── docs/                # Guidelines, project goals, and roadmap
-└── install/             # Installation scripts, hooks, and agent-awareness config
-    ├── hooks/           # PreToolUse hook scripts
-    ├── install.sh       # Linux/macOS installer
-    ├── install.ps1      # Windows installer
-    ├── list-agents.sh   # List installed agents (bash)
-    └── list-agents.ps1  # List installed agents (PowerShell)
+├── agents/            # One flat file per agent: <name>.md with Claude Code frontmatter
+├── install/
+│   ├── custom-instructions.md  # Orchestrator rules, installed as CLAUDE.md
+│   ├── install.sh              # Linux/macOS installer
+│   ├── install.ps1             # Windows installer
+│   ├── list-agents.sh          # List agents and their descriptions (Linux/macOS)
+│   └── list-agents.ps1         # List agents and their descriptions (Windows)
+├── CONTRIBUTING.md    # Agent file format, conventions, PR process
+├── CHANGELOG.md
+├── LICENSE
+└── README.md
 ```
-
-## Creating Custom Agents
-
-```bash
-claude --agent agent-creator
-```
-
-Or manually create `~/.claude/agents/your-agent/instructions.md` with YAML frontmatter.
-
-See [docs/agent-guidelines.md](docs/agent-guidelines.md) for detailed guidelines.
 
 ## Updating
 
+Pull the latest version and re-run the installer:
+
 ```bash
-claude --agent dotclaude-updater
+cd dotClaude && git pull
+./install/install.sh            # or .\install\install.ps1 on Windows
 ```
 
-Or manually:
-```bash
-cd ~/dotClaude && git pull
-./install/install.sh
-```
+Or ask Claude Code to have `agent-manager` sync-install the repository agents into your Claude config.
 
 ## Contributing
 
-1. Fork the repository
-2. Create a focused agent following the [guidelines](docs/agent-guidelines.md)
-3. Test locally with `claude --agent your-agent`
-4. Submit a pull request
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the agent file format and PR process.
 
 ## License
 
-MIT
-
----
-
-*See [docs/roadmap.md](docs/roadmap.md) for development roadmap and [CHANGELOG.md](CHANGELOG.md) for version history.*
+MIT — see [LICENSE](LICENSE)
