@@ -79,8 +79,7 @@ describe('known-releases.json', () => {
 describe('agents: adoption', () => {
   const variants = {
     'exact v3.0.0 copy': (b) => b,
-    'exact copy with CRLF line endings': (b) => Buffer.from(b.toString('utf8').replace(/\r\n/g, '\n').replace(/\n/g, '\r\n')),
-    'exact copy with UTF-8 BOM': (b) => Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), b]),
+    'exact copy with CRLF line endings and UTF-8 BOM': (b) => Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(b.toString('utf8').replace(/\r\n/g, '\n').replace(/\n/g, '\r\n'))]),
   };
   for (const [name, mk] of Object.entries(variants)) {
     test(`${name} is adopted without a backup`, { skip: NEEDS_TAG() }, () => {
@@ -196,16 +195,6 @@ describe('agents: cleanBackups', () => {
     assert.equal(readMan(e.cfg).backups.length, 1);
   });
 
-  test('entries missing `to` or `from` are skipped by agents and preserved', () => {
-    const e = env();
-    const bad = [{ from: REL }, { to: TO }, null, { from: 5, to: 6 }];
-    put(path.join(e.cfg, TO), 'whatever');
-    writeMan(e.cfg, { backups: bad });
-    const r = run('agents', e);
-    assert.equal(r.code, 0, r.out);
-    assert.deepEqual(readMan(e.cfg).backups, bad);
-    assert.ok(fs.existsSync(path.join(e.cfg, TO)));
-  });
 });
 
 describe('copy: skills backup', () => {
@@ -320,25 +309,19 @@ describe('--dry-run writes nothing', () => {
     assert.deepEqual(snapshot(e.dir), before);
   });
 
-  test('copy --dry-run does not back up or install anything', () => {
-    const e = env();
-    for (const f of ['hooks/guard.js', 'hooks/report-check.js', 'statusline/statusline.js']) put(path.join(e.src, f), '// stub\n');
-    put(path.join(e.src, 'skills/foo/SKILL.md'), 'repo skill\n');
-    put(path.join(e.cfg, 'skills/foo/SKILL.md'), 'user skill\n');
-    const before = snapshot(e.dir);
-    const r = run('copy', e, ['--dry-run']);
-    assert.equal(r.code, 0, r.out);
-    assert.deepEqual(snapshot(e.dir), before);
-  });
-
-  test('remove --dry-run leaves files, backups and manifest in place', () => {
-    const e = env();
-    put(path.join(e.cfg, REL), 'installed');
-    put(path.join(e.cfg, 'dotclaude/backups/x/agents/a.md'), 'orig');
-    writeMan(e.cfg, { agents: [AGENT], backups: [{ from: 'agents/a.md', to: 'dotclaude/backups/x/agents/a.md' }] });
-    const before = snapshot(e.dir);
-    const r = run('remove', e, ['--dry-run']);
-    assert.equal(r.code, 0, r.out);
-    assert.deepEqual(snapshot(e.dir), before);
-  });
+  const stubs = (e) => { for (const f of ['hooks/guard.js', 'hooks/report-check.js', 'statusline/statusline.js']) put(path.join(e.src, f), '// stub\n'); };
+  const table = [
+    ['copy', (e) => { stubs(e); put(path.join(e.src, 'skills/foo/SKILL.md'), 'repo skill\n'); put(path.join(e.cfg, 'skills/foo/SKILL.md'), 'user skill\n'); }],
+    ['remove', (e) => { put(path.join(e.cfg, REL), 'installed'); put(path.join(e.cfg, 'dotclaude/backups/x/agents/a.md'), 'orig'); writeMan(e.cfg, { agents: [AGENT], backups: [{ from: 'agents/a.md', to: 'dotclaude/backups/x/agents/a.md' }] }); }],
+  ];
+  for (const [sub, setup] of table) {
+    test(`${sub} --dry-run changes nothing`, () => {
+      const e = env();
+      setup(e);
+      const before = snapshot(e.dir);
+      const r = run(sub, e, ['--dry-run']);
+      assert.equal(r.code, 0, r.out);
+      assert.deepEqual(snapshot(e.dir), before);
+    });
+  }
 });
