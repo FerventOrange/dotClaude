@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Orchestrator picks the Agent `model` (`haiku`, `sonnet`, or `opus`) for each delegation by task complexity; it sets `model` explicitly on every delegation, with merges and conflict resolution kept on `sonnet` or higher
+
+### Changed
+- Orchestrator never assumes: intent, scope, defaults, and design choices are confirmed with the user through AskUserQuestion before delegating, and subagents return `NEEDS_CLARIFICATION` instead of proceeding on an unconfirmed assumption
+
 ## [3.2.0] - 2026-10-21
 
 ### Added

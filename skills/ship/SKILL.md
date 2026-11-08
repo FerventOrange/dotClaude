@@ -12,10 +12,10 @@ Task: $ARGUMENTS (if empty, use the user's current request).
 
 ## 0. Before starting
 - Use the project CLAUDE.md (Commands, Conventions, Boundaries) already in your context; pass relevant parts into every delegation.
-- Rate confidence in intent, scope, and expected result. Below **80%**, or anything ambiguous/contradictory: ask the user (AskUserQuestion) before delegating.
+- Rate confidence in intent, scope, and expected result. Below **80%**, anything ambiguous/contradictory, or any point where you would otherwise assume (intent, scope, defaults, design choice): ask the user (AskUserQuestion) and wait for the answer before delegating.
 
 ## Steps
-1. **Clarify** — resolve open questions with the user. Record the agreed task, scope, and acceptance criteria.
+1. **Clarify** — resolve open questions with the user; no unconfirmed assumptions. Record the agreed task, scope, and acceptance criteria.
 2. **Branch** — git-agent creates `<type>/<short-desc>` from up-to-date default branch. Never work on main. If the current branch does not fit the task, start a new one.
 3. **Implement** — implement-agent (app code), infra-agent (CI/config/tooling/installers), docs-agent (docs-only work), agent-manager (`agents/`, `skills/`, `templates/project-CLAUDE.md`, `install/custom-instructions.md`; only on explicit user request). Parallelize per Parallelism below.
 4. **Test** — test-agent adds and runs tests; on unexplained failures, debug-agent diagnoses, then the owner fixes.
@@ -37,6 +37,7 @@ CYCLE: <n>/3 (review/fix only)
 PRIOR FINDINGS: <F<n> [SEV] file:line — problem — fix ...> (review/fix only)
 AUTHORIZATIONS: <explicit user approvals for gated actions, quoted; or "none">
 ```
+Always set the Agent `model` explicitly per call by task complexity, per the CLAUDE.md Workflow tiers (haiku mechanical, sonnet standard, opus complex; merges and conflict resolution sonnet or higher).
 Never write an authorization the user did not give. Never forward your own guess as a user decision.
 
 ## Parallelism
