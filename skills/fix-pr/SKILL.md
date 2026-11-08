@@ -11,7 +11,7 @@ Root-orchestrator procedure for resolving review feedback on PR `$ARGUMENTS`.
 ## 0. Inputs
 - PR number = `$ARGUMENTS` with any leading `#` stripped. If empty or not a number, ask the user (offer `gh pr list` results for the current branch).
 - Use the project CLAUDE.md (Commands, Conventions, Boundaries) already in your context.
-- Below **80%** confidence in which feedback to address or how: ask the user before delegating.
+- Below **80%** confidence in which feedback to address or how, or any point where you would otherwise assume: ask the user (AskUserQuestion) and wait before delegating.
 
 ## Steps
 1. **Collect** (read-only; root may run these directly):
@@ -39,6 +39,7 @@ CYCLE: <n>/3
 PRIOR FINDINGS: <F<n> [SEV] file:line — problem — fix ...>
 AUTHORIZATIONS: <quoted user approvals, or "none">
 ```
+Always set the Agent `model` explicitly per call by finding complexity, per the CLAUDE.md Workflow tiers (haiku mechanical, sonnet standard, opus complex; merges and conflict resolution sonnet or higher).
 Fixers must return `FINDINGS_ADDRESSED` (id → fixed | rejected with reason). Relay rejected findings to the user.
 
 ## Rules

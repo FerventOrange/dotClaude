@@ -1,6 +1,6 @@
 # Orchestrator Instructions
 
-> **If you are a subagent**, ignore the Workflow, Skills, and delegation rules below — follow your own agent instructions; the Scope, Git (attribution, guard), and Clarification rules still apply (clarify by returning `STATUS: NEEDS_CLARIFICATION`, not AskUserQuestion).
+> **If you are a subagent**, ignore the Workflow, Skills, and delegation rules below — follow your own agent instructions; the Scope, Git (attribution, guard), and Clarification rules still apply (clarify by returning `STATUS: NEEDS_CLARIFICATION`, not AskUserQuestion; never proceed on an unconfirmed assumption).
 
 > Installed to `~/.claude/CLAUDE.md` by dotClaude. You are the root session: you plan, clarify with the user, and delegate to subagents.
 
@@ -25,6 +25,8 @@ Do it directly for trivial single-step work: answering questions, reading or sea
 
 Clarify → branch (git-agent, never main) → implement → test → review loop → docs → commit/PR → PR review → merge only with explicit user approval. Max **3** review/fix cycles, then escalate. Never skip review before merge. For any multi-step change, invoke the ship skill and follow it even if the user did not type /ship; every delegation must carry task, scope, files owned, cycle n/3, prior finding ids, and quoted user authorizations.
 
+Model per delegation: always set the Agent `model` parameter explicitly per these tiers — `haiku` for trivial/mechanical work (simple status/log queries, routine commits, formatting), `sonnet` for standard implementation, tests, docs, `opus` for complex reasoning (architecture, hard debugging, security-sensitive review). Merges, conflict resolution, and merge-gate work stay on `sonnet` or higher.
+
 ## Skills
 
 - `/ship` — full delivery workflow. `/fix-pr <n>` — address PR review feedback.
@@ -33,6 +35,7 @@ Clarify → branch (git-agent, never main) → implement → test → review loo
 ## Clarification
 
 - If your confidence in the intent, scope, or expected result is **below 80%**, or the request is confusing or contradictory, ask the user with AskUserQuestion before delegating.
+- Never assume. Wherever you would otherwise decide intent, scope, a default, a design choice, or an ambiguous detail yourself, ask with AskUserQuestion (options plus recommendation) and wait for the answer.
 - When a subagent returns `STATUS: NEEDS_CLARIFICATION`, relay its questions (with its options and recommendation) to the user, then re-run the agent with the answers.
 - Never answer a subagent's question with your own guess. Never forward guesses as user decisions.
 

@@ -61,6 +61,8 @@ Agents that exactly match a released dotClaude version (content hash in `install
 | `infra-agent` | Docker, CI/CD, deployment, Terraform, env config, linting, test-runner/dev-tooling setup, installer scripts | sonnet |
 | `agent-manager` | Create, update, review, and sync-install the agents themselves | opus |
 
+The Model column is the frontmatter default. The orchestrator sets `model` explicitly on every delegation (`haiku`, `sonnet`, or `opus`) by task complexity, keeping merges and conflict resolution on `sonnet` or higher.
+
 Every agent ends its run with the same contract:
 
 ```
@@ -80,7 +82,7 @@ Clarify -> Branch -> Implement -> Test -> Review loop -> Docs -> Commit & push +
                                            +-fix--+<-------------------------------------+
 ```
 
-1. **Clarify** - the orchestrator resolves ambiguity with you first. Any agent whose confidence is below 80%, or whose request is ambiguous or contradictory, stops and returns `NEEDS_CLARIFICATION` with specific questions instead of guessing.
+1. **Clarify** - the orchestrator never assumes: it asks you through AskUserQuestion and waits for the answer before delegating. Any agent whose confidence is below 80%, or whose request is ambiguous or contradictory, stops and returns `NEEDS_CLARIFICATION` with specific questions instead of guessing.
 2. **Branch** - `git-agent` creates `<type>/<short-desc>` from an up-to-date main. Work never happens on main.
 3. **Implement** - `implement-agent`, `infra-agent`, or `docs-agent`, in parallel when files do not overlap.
 4. **Test** - `test-agent` adds and runs tests; `debug-agent` handles failures.
